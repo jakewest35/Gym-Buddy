@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gym_buddy_app/utilities/database_utility.dart';
 
 class DietPage extends StatefulWidget {
   const DietPage({super.key});
@@ -9,7 +10,8 @@ class DietPage extends StatefulWidget {
 
 class _DietPageState extends State<DietPage> {
   final _controller = TextEditingController();
-  bool _validate = false;
+  DatabaseUtility _db = DatabaseUtility();
+  bool _dietEntryValid = false;
 
   //dispose of the controller when the widget is unmounted
   @override
@@ -20,24 +22,54 @@ class _DietPageState extends State<DietPage> {
 
   @override
   Widget build(BuildContext context) {
-    String diet = "";
+    String entry = "";
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        TextField(
+        TextFormField(
           controller: _controller,
           decoration: InputDecoration(
             labelText: "Enter your diet for the day",
-            errorText: _validate ? "diet can't be empty" : null,
+            errorText: _dietEntryValid ? "diet can't be empty" : null,
           ),
-          onChanged: (value) => diet = value,
+          onChanged: (value) {
+            entry = value;
+            _dietEntryValid = true;
+          },
         ),
         ElevatedButton(
             onPressed: () {
-              setState(() {
-                _controller.text.isEmpty ? _validate = true : _validate = false;
-              });
-              print("User submitted their diet: $diet");
+              if (_dietEntryValid == false) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text("Make sure diet entry is not empty"),
+                    actions: [
+                      MaterialButton(
+                          child: Text("Ok"),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          })
+                    ],
+                  ),
+                );
+              } else {
+                _db.postDiet(entry);
+                _controller.clear();
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text("Diet entry saved!"),
+                    actions: [
+                      MaterialButton(
+                          child: Text("Ok"),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          })
+                    ],
+                  ),
+                );
+              }
             },
             child: Text(
               'submit',

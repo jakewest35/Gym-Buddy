@@ -1,35 +1,96 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_buddy_app/utilities/database_utility.dart';
 import 'package:gym_buddy_app/utilities/workout_utility.dart';
+import 'package:provider/provider.dart';
 
 import '../models/exercise_model.dart';
 
 class WorkoutPage extends StatelessWidget {
-  const WorkoutPage({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          WorkoutScreen(),
-        ],
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        WorkoutInformation(),
+        ChangeNotifierProvider(
+          create: (context) => WorkoutUtility(),
+          child: WorkoutScreenButtons(),
+        ),
+      ],
     );
   }
 }
 
-class WorkoutScreen extends StatefulWidget {
-  const WorkoutScreen({super.key});
+class WorkoutInformation extends StatefulWidget {
+  const WorkoutInformation({super.key});
 
   @override
-  State<WorkoutScreen> createState() => _WorkoutScreenState();
+  State<WorkoutInformation> createState() => _WorkoutInformationState();
 }
 
-class _WorkoutScreenState extends State<WorkoutScreen> {
+class _WorkoutInformationState extends State<WorkoutInformation> {
+  @override
+  Widget build(BuildContext context) {
+    //get all previous workouts from Firestore collection
+    final db = FirebaseFirestore.instance;
+    final docRef = db.collection("workouts");
+    docRef.get().then((querySnapshot) {
+      print("Successfully completed retrieving workouts!");
+      for (var docSnapshot in querySnapshot.docs) {
+        docSnapshot.data().forEach((key, value) {
+          for (var exercise in value) {
+            print(
+                "${docSnapshot.id} => ${exercise["name"]} for ${exercise["sets"]} sets of ${exercise["reps"]} reps at ${exercise["weight"]} lbs.");
+          }
+        });
+      }
+    });
+
+    return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      StreamBuilder(
+        stream: FirebaseFirestore.instance.collection("workouts").snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text("Something went wrong."),
+            );
+          }
+          return SizedBox(
+            height: 3,
+            child: ListView(
+              children: snapshot.data!.docs.map((document) {
+                return Center(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width / 2,
+                    height: MediaQuery.of(context).size.height / 2,
+                    child: Text("Title:"),
+                  ),
+                );
+              }).toList(),
+            ),
+          );
+        },
+      ),
+    ]);
+  }
+}
+
+class WorkoutScreenButtons extends StatefulWidget {
+  const WorkoutScreenButtons({super.key});
+
+  @override
+  State<WorkoutScreenButtons> createState() => _WorkoutScreenButtonsState();
+}
+
+class _WorkoutScreenButtonsState extends State<WorkoutScreenButtons> {
   String sets = '0', reps = '0', weight = '0';
   WorkoutUtility _workoutUtility = WorkoutUtility();
+  DatabaseUtility _databaseUtility = DatabaseUtility();
 
   ///Alert dialog to display the UI to add an exercise to the current workout
   void addExercise() {
@@ -85,7 +146,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             )));
   }
 
-  ///Add the exercise to the current workout
+  ///Add the exercise to the current local workout
   void save(String name, String weight, String sets, String reps) {
     _workoutUtility.addExercise(name, weight, reps, sets);
     Navigator.pop(context);
@@ -95,50 +156,37 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     Navigator.pop(context);
   }
 
-  ///Structures and posts the data to the databser
-  void postWorkout(List<Exercise> workoutList) async {
-    String timestamp = "${DateTime.now().month}-${DateTime.now().day}";
-    print("User finished their workout for $timestamp. They did:");
-    var exercises = [];
-    int index = 0;
-    for (var item in workoutList) {
-      var tmp = {};
-      tmp["name"] = item.name;
-      tmp["weight"] = item.weight;
-      tmp["sets"] = item.sets;
-      tmp["reps"] = item.reps;
-      exercises.insert(index, tmp);
-      index++;
-    }
-    print(exercises);
-    CollectionReference workouts =
-        FirebaseFirestore.instance.collection("workouts");
-    await workouts.doc(timestamp).set({"exercises": exercises}).then(
-      (value) => print("Successfully posted workout to database."),
-      onError: (e) {
-        print("Error posting to the database. Error: $e");
-      },
-    );
-
-    workoutList.clear();
-    print("reset workout");
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        ElevatedButton(
-            onPressed: addExercise,
-            child: Text("Add an exercise to the workout")),
-        ElevatedButton(
+    return Consumer<WorkoutUtility>(
+      builder: (context, value, child) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+              onPressed: addExercise,
+              child: Text("Add an exercise to current workout")),
+          ElevatedButton(
             onPressed: () {
-              postWorkout(_workoutUtility.getCurrentWorkout());
+              _databaseUtility.postWorkout(_workoutUtility.getCurrentWorkout());
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Workout saved!"),
+                  actions: [
+                    MaterialButton(
+                        child: Text("Ok"),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        })
+                  ],
+                ),
+              );
             },
-            child: Text("Finish the workout")),
-        ElevatedButton(
-            //!DELETE THIS BUTTON LATER
+            child: Text("Finish the workout"),
+          ),
+
+          //!DELETE THIS BUTTON LATER
+          ElevatedButton(
             onPressed: () {
               List<Exercise> workout = _workoutUtility.getCurrentWorkout();
               if (workout.isNotEmpty) {
@@ -150,8 +198,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 print("No exercises added yet");
               }
             },
-            child: Text("Print the workout")),
-      ],
+            child: Text("Print the workout"),
+          ),
+        ],
+      ),
     );
   }
 }

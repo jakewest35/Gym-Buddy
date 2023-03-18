@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/models/exercise_model.dart';
 
-/// Manages creating workouts and exercises.
+/// Manages creating workouts and exercises locally.
 ///
 /// WORKOUT DATA STRUCTURE
 ///
@@ -24,6 +24,10 @@ class WorkoutUtility extends ChangeNotifier {
   // get a list of workouts
   List<Exercise> getCurrentWorkout() {
     return _currentWorkout;
+  }
+
+  int getCurrentWorkoutLength() {
+    return _currentWorkout.length;
   }
 
   ///clear the current workout list
