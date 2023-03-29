@@ -4,7 +4,7 @@ import 'exercise_model.dart';
 
 class WorkoutModel {
   final String date;
-  final List<Exercise> exercises;
+  final List<ExerciseModel> exercises;
 
   WorkoutModel({required this.date, required this.exercises});
 
@@ -12,6 +12,7 @@ class WorkoutModel {
   factory WorkoutModel.fromFirestore(
       DocumentSnapshot<Map<String, dynamic>> snapshot) {
     final data = snapshot.data()!;
+    print(data);
     return WorkoutModel(date: data["date"], exercises: data["exercises"]);
   }
 }

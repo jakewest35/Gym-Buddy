@@ -1,20 +1,22 @@
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_buddy_app/themes/color_schemes.g.dart';
 import 'package:provider/provider.dart';
 import 'utilities/app_state.dart';
-import 'themes/color_schemes.g.dart';
 import 'package:go_router/go_router.dart';
 import 'utilities/page_loader.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(ChangeNotifierProvider(
-    create: (context) => ApplicationState(),
-    builder: (context, child) => App(),
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ApplicationState(),
+      builder: (context, child) => App(),
+    ),
+  );
 }
 
-///routes definition for the global application
+///authentication routes definition for the application
 final _router = GoRouter(
   routes: [
     GoRoute(
@@ -114,9 +116,11 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Gym Buddy',
-      // debugShowCheckedModeBanner: false, //disables debug flag on simulator
-      theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
-      darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
+      debugShowCheckedModeBanner: false, //disables debug flag on simulator
+      theme: ThemeData(
+          useMaterial3: true, colorScheme: CustomTheme.lightColorScheme),
+      darkTheme: ThemeData(
+          useMaterial3: true, colorScheme: CustomTheme.darkColorScheme),
       themeMode: ThemeMode.system,
       routerConfig: _router,
     );

@@ -62,7 +62,7 @@ class _PageLoaderState extends State<PageLoader> {
                     label: Text('Workout Log'),
                   ),
                   NavigationRailDestination(
-                      icon: Icon(Icons.menu_book), label: Text('Diet log')),
+                      icon: Icon(Icons.restaurant), label: Text('Diet log')),
                   NavigationRailDestination(
                       icon: Icon(Icons.mood), label: Text("Journal")),
                 ],

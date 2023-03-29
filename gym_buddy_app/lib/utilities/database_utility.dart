@@ -2,6 +2,7 @@ import 'dart:core';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_buddy_app/models/diet_model.dart';
 
 import '../models/exercise_model.dart';
 import '../models/journal_model.dart';
@@ -12,8 +13,39 @@ class DatabaseUtility extends ChangeNotifier {
   ///get all workouts from the database
   Future<List<WorkoutModel>> getAllWorkouts() async {
     final db = FirebaseFirestore.instance;
-    final snapshot = await db.collection("workouts").get();
-    return snapshot.docs.map((e) => WorkoutModel.fromFirestore(e)).toList();
+    List<WorkoutModel> workouts = [];
+    db.collection("workouts").get().then(
+      (querySnapshot) {
+        if (querySnapshot.docs.isNotEmpty) {
+          for (var docSnapshot in querySnapshot.docs) {
+            var date = docSnapshot.id;
+            WorkoutModel tmpWorkout = WorkoutModel(date: date, exercises: []);
+            docSnapshot.data().forEach(
+              (key, value) {
+                print(value);
+                //Construct each exercise and add it to tmpWorkout
+                // for (var item in value) {
+                //   ExerciseModel tmpExercise = ExerciseModel(
+                //       name: item["name"],
+                //       weight: item["weight"],
+                //       reps: item["reps"],
+                //       sets: item["sets"]);
+                //   tmpWorkout.exercises.add(tmpExercise);
+                // }
+              },
+            );
+            print(
+                "database_utility::getAllWorkouts; Added ${tmpWorkout.date} => ${tmpWorkout.exercises}");
+            workouts.add(tmpWorkout);
+          }
+        } else {
+          return [];
+        }
+      },
+      onError: (e) => print("Error completing: $e"),
+    );
+    print("Successfully retrieved all workouts");
+    return workouts;
   }
 
   ///Get a single workout that matches a specified date
@@ -27,7 +59,7 @@ class DatabaseUtility extends ChangeNotifier {
   }
 
   ///Structures and posts the data to the database
-  void postWorkout(List<Exercise> workoutList) async {
+  void postWorkout(List<ExerciseModel> workoutList) async {
     ///ensuring that a user cannot submit an empty workout
     if (workoutList.isEmpty) {
       print("Cannot submit an empty workout list");
@@ -45,10 +77,10 @@ class DatabaseUtility extends ChangeNotifier {
       tmp["weight"] = item.weight;
       tmp["sets"] = item.sets;
       tmp["reps"] = item.reps;
+      tmp["isCompleted"] = item.isCompleted;
       exercises.insert(index, tmp);
       index++;
     }
-    print(exercises);
 
     //post the data
     CollectionReference workouts =
@@ -59,9 +91,7 @@ class DatabaseUtility extends ChangeNotifier {
         print("Error posting to the database. Error: $e");
       },
     );
-
-    workoutList.clear();
-    print("reset workout");
+    notifyListeners();
   }
 
   ///####### JOURNAL FUNCTIONS #######
@@ -121,5 +151,20 @@ class DatabaseUtility extends ChangeNotifier {
         onError: (e) {
       print("Error posting the diet entry to the database. Error: $e");
     });
+  }
+
+  ///Get all diet entries
+  Future<List<DietModel>> getAllDietEntries() async {
+    final db = FirebaseFirestore.instance;
+    final snapshot = await db.collection("diet").get();
+    return snapshot.docs.map((e) => DietModel.fromFirestore(e)).toList();
+  }
+
+  ///Get a single diet entry
+  Future<DietModel> getDietEntry(String timestamp) async {
+    final db = FirebaseFirestore.instance;
+    final snapshot =
+        await db.collection("diet").where("date", isEqualTo: timestamp).get();
+    return snapshot.docs.map((e) => DietModel.fromFirestore(e)).single;
   }
 }

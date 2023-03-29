@@ -32,7 +32,7 @@ class _JournalPageState extends State<JournalPage> {
         TextFormField(
           controller: _textController,
           decoration: InputDecoration(
-            labelText: "Enter your journal for the day",
+            labelText: "How did you feel today?",
             errorText: _journalValid ? "Journal can't be empty" : null,
           ),
           onChanged: (value) {
