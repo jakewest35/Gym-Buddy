@@ -14,17 +14,13 @@ class ExerciseModel {
       required this.sets,
       this.isCompleted = false});
 
-  factory ExerciseModel.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> snapshot,
-      SnapshotOptions? options) {
-    final data = snapshot.data()!;
-    return ExerciseModel(
-        name: data["name"],
-        weight: data["weight"],
-        reps: data["reps"],
-        sets: data["sets"],
-        isCompleted: data["isCompleted"]);
-  }
+  ExerciseModel.fromFirestore(
+      QueryDocumentSnapshot<Map<String, dynamic>> snapshot)
+      : name = snapshot["name"],
+        weight = snapshot["weight"],
+        reps = snapshot["reps"],
+        sets = snapshot["sets"],
+        isCompleted = snapshot["isCompleted"];
 
   Map<String, dynamic> toFirestore() {
     return {

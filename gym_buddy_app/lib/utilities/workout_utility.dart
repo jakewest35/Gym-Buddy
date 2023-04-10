@@ -48,6 +48,7 @@ class WorkoutUtility extends ChangeNotifier {
       ExerciseModel tmp = _currentWorkout
           .firstWhere((exercise) => exercise.name == exerciseName);
       tmp.isCompleted = !tmp.isCompleted;
+      print("Toggled completed status of $exerciseName to ${tmp.isCompleted}");
       notifyListeners();
     } catch (e) {
       print("couldn't find exercise to mark as completed");

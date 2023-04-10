@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gym_buddy_app/screens/previous_workouts_screen.dart';
+import 'package:gym_buddy_app/screens/all_previous_workouts_screen.dart';
 import 'package:gym_buddy_app/utilities/workout_utility.dart';
 import 'package:provider/provider.dart';
 

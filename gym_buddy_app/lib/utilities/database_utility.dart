@@ -11,51 +11,33 @@ import '../models/workout_model.dart';
 class DatabaseUtility extends ChangeNotifier {
   ///####### WORKOUT FUNCTIONS #######
   ///get all workouts from the database
-  Future<List<WorkoutModel>> getAllWorkouts() async {
-    final db = FirebaseFirestore.instance;
-    List<WorkoutModel> workouts = [];
-    db.collection("workouts").get().then(
-      (querySnapshot) {
-        if (querySnapshot.docs.isNotEmpty) {
-          for (var docSnapshot in querySnapshot.docs) {
-            var date = docSnapshot.id;
-            WorkoutModel tmpWorkout = WorkoutModel(date: date, exercises: []);
-            docSnapshot.data().forEach(
-              (key, value) {
-                print(value);
-                //Construct each exercise and add it to tmpWorkout
-                // for (var item in value) {
-                //   ExerciseModel tmpExercise = ExerciseModel(
-                //       name: item["name"],
-                //       weight: item["weight"],
-                //       reps: item["reps"],
-                //       sets: item["sets"]);
-                //   tmpWorkout.exercises.add(tmpExercise);
-                // }
-              },
-            );
-            print(
-                "database_utility::getAllWorkouts; Added ${tmpWorkout.date} => ${tmpWorkout.exercises}");
-            workouts.add(tmpWorkout);
-          }
-        } else {
-          return [];
-        }
-      },
-      onError: (e) => print("Error completing: $e"),
-    );
-    print("Successfully retrieved all workouts");
-    return workouts;
+  Future<List<String>> getAllWorkoutDates() async {
+    final workoutRef =
+        await FirebaseFirestore.instance.collection("workouts").get();
+    final workoutDates = workoutRef.docs.map((doc) => doc.id).toList();
+    return workoutDates;
   }
 
   ///Get a single workout that matches a specified date
-  Future<WorkoutModel> getWorkout(String timestamp) async {
-    final db = FirebaseFirestore.instance;
-    final snapshot = await db
-        .collection("workouts")
-        .where("timestamp", isEqualTo: timestamp)
-        .get();
-    return snapshot.docs.map((e) => WorkoutModel.fromFirestore(e)).single;
+  Future<WorkoutModel> getWorkout(String id) async {
+    WorkoutModel workout = WorkoutModel(date: id, exercises: []);
+    final workoutRef =
+        FirebaseFirestore.instance.collection("workouts").doc(id);
+    workoutRef.get().then((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      // print(data["exercises"]);
+      for (var exercise in data["exercises"]) {
+        ExerciseModel tmpExercise = ExerciseModel(
+            name: exercise["name"],
+            weight: exercise["weight"],
+            reps: exercise["reps"],
+            sets: exercise["sets"],
+            isCompleted: exercise["isCompleted"]);
+        print("added ${exercise["name"]} to list of previous exercises");
+        workout.exercises.add(tmpExercise);
+      }
+    });
+    return workout;
   }
 
   ///Structures and posts the data to the database

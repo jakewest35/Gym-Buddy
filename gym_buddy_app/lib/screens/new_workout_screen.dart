@@ -97,7 +97,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   ///checkbox was tapped, toggle exercise completed status
   void onCheckboxChanged(String exerciseName) {
-    print("new_workout::onCheckboxChanged searching for $exerciseName");
     Provider.of<WorkoutUtility>(context, listen: false)
         .checkOffExercise(exerciseName);
   }
