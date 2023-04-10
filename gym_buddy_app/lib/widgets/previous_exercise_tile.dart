@@ -47,7 +47,7 @@ class _PreviousExerciseTileState extends State<PreviousExerciseTile> {
                   ? Text("Completed")
                   : Text("Not completed"),
               backgroundColor:
-                  widget.isCompleted ? Colors.green[100] : Colors.red[100],
+                  widget.isCompleted ? Colors.green[300] : Colors.red[200],
             ),
           ],
         ),

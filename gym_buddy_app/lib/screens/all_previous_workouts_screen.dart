@@ -58,13 +58,14 @@ class _PreviousWorkoutsPageState extends State<PreviousWorkoutsPage> {
                 title: Text("Something went wrong :("),
               );
             } else {
-              return CircularProgressIndicator();
+              return Center(child: CircularProgressIndicator());
             }
           },
         ));
   }
 }
 
+/// Page to show all previous exercises and their corresponding information
 class PreviousWorkoutDetails extends StatelessWidget {
   PreviousWorkoutDetails({super.key, required this.date});
   final String date;
@@ -95,7 +96,7 @@ class PreviousWorkoutDetails extends StatelessWidget {
             else {
               if (snapshot.hasData) {
                 final workouts = snapshot.data!;
-                print(workouts.exercises);
+                print("has data");
                 return ListView.builder(
                   itemCount: workouts.exercises.length,
                   itemBuilder: (context, index) => PreviousExerciseTile(

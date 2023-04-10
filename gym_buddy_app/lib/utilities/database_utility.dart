@@ -15,6 +15,7 @@ class DatabaseUtility extends ChangeNotifier {
     final workoutRef =
         await FirebaseFirestore.instance.collection("workouts").get();
     final workoutDates = workoutRef.docs.map((doc) => doc.id).toList();
+    notifyListeners();
     return workoutDates;
   }
 
@@ -23,9 +24,8 @@ class DatabaseUtility extends ChangeNotifier {
     WorkoutModel workout = WorkoutModel(date: id, exercises: []);
     final workoutRef =
         FirebaseFirestore.instance.collection("workouts").doc(id);
-    workoutRef.get().then((doc) {
+    await workoutRef.get().then((doc) {
       final data = doc.data() as Map<String, dynamic>;
-      // print(data["exercises"]);
       for (var exercise in data["exercises"]) {
         ExerciseModel tmpExercise = ExerciseModel(
             name: exercise["name"],
