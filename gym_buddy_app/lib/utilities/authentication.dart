@@ -5,7 +5,7 @@ import 'package:flutter_signin_button/button_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import '../widgets/custom_widgets.dart';
+import '../widgets/authentication_widget.dart';
 
 /// Handles the authentication workflow for the dashboard login/logout
 /// button. Redirects to src/authentication.dart

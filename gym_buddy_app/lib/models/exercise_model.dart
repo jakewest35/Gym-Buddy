@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class ExerciseModel {
   final String name;
   final String weight;
@@ -14,21 +12,18 @@ class ExerciseModel {
       required this.sets,
       this.isCompleted = false});
 
-  ExerciseModel.fromFirestore(
-      QueryDocumentSnapshot<Map<String, dynamic>> snapshot)
-      : name = snapshot["name"],
-        weight = snapshot["weight"],
-        reps = snapshot["reps"],
-        sets = snapshot["sets"],
-        isCompleted = snapshot["isCompleted"];
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'weight': weight,
+        'reps': reps,
+        'sets': sets,
+        'isCompleted': isCompleted,
+      };
 
-  Map<String, dynamic> toFirestore() {
-    return {
-      "name": name,
-      "weight": weight,
-      "reps": reps,
-      "sets": sets,
-      "isCompleted": isCompleted,
-    };
-  }
+  factory ExerciseModel.fromJson(Map<String, dynamic> json) => ExerciseModel(
+      name: json["name"],
+      weight: json["weight"],
+      reps: json["reps"],
+      sets: json["sets"],
+      isCompleted: json["isCompleted"]);
 }

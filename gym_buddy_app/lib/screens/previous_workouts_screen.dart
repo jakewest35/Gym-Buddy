@@ -16,11 +16,6 @@ class _PreviousWorkoutsPageState extends State<PreviousWorkoutsPage> {
   DatabaseUtility db = DatabaseUtility();
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
@@ -35,16 +30,22 @@ class _PreviousWorkoutsPageState extends State<PreviousWorkoutsPage> {
                 final workoutDates = snapshot.data!;
                 return ListView.builder(
                   itemCount: workoutDates.length,
-                  itemBuilder: (context, index) => ListTile(
-                    title: Text(workoutDates[index]),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PreviousWorkoutDetails(
-                                date: workoutDates[index]),
-                          ));
-                    },
+                  itemBuilder: (context, index) => Card(
+                    elevation: 2.0,
+                    child: ListTile(
+                      title: Text(
+                        workoutDates[index],
+                        textAlign: TextAlign.center,
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PreviousWorkoutDetails(
+                                  date: workoutDates[index]),
+                            ));
+                      },
+                    ),
                   ),
                 );
               } else {
@@ -53,11 +54,14 @@ class _PreviousWorkoutsPageState extends State<PreviousWorkoutsPage> {
                 );
               }
             }
+            // if there was an error
             if (snapshot.hasError) {
               return AlertDialog(
                 title: Text("Something went wrong :("),
               );
-            } else {
+            }
+            //still loading, show progress inidcator
+            else {
               return Center(child: CircularProgressIndicator());
             }
           },
@@ -96,7 +100,6 @@ class PreviousWorkoutDetails extends StatelessWidget {
             else {
               if (snapshot.hasData) {
                 final workouts = snapshot.data!;
-                print("has data");
                 return ListView.builder(
                   itemCount: workouts.exercises.length,
                   itemBuilder: (context, index) => PreviousExerciseTile(
