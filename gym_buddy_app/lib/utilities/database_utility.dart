@@ -20,24 +20,28 @@ class DatabaseUtility extends ChangeNotifier {
   }
 
   ///Get a single workout that matches a specified date
-  Future<WorkoutModel> getWorkout(String id) async {
-    WorkoutModel workout = WorkoutModel(date: id, exercises: []);
-    final workoutRef =
-        FirebaseFirestore.instance.collection("workouts").doc(id);
-    await workoutRef.get().then((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      for (var exercise in data["exercises"]) {
-        ExerciseModel tmpExercise = ExerciseModel(
-            name: exercise["name"],
-            weight: exercise["weight"],
-            reps: exercise["reps"],
-            sets: exercise["sets"],
-            isCompleted: exercise["isCompleted"]);
-        print("added ${exercise["name"]} to list of previous exercises");
-        workout.exercises.add(tmpExercise);
-      }
-    });
-    return workout;
+  Future<WorkoutModel?> getWorkout(String id) async {
+    try {
+      WorkoutModel workout = WorkoutModel(date: id, exercises: []);
+      final workoutRef =
+          FirebaseFirestore.instance.collection("workouts").doc(id);
+      await workoutRef.get().then((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        for (var exercise in data["exercises"]) {
+          ExerciseModel tmpExercise = ExerciseModel(
+              name: exercise["name"],
+              weight: exercise["weight"],
+              reps: exercise["reps"],
+              sets: exercise["sets"],
+              isCompleted: exercise["isCompleted"]);
+          workout.exercises.add(tmpExercise);
+        }
+      });
+      return workout;
+    } catch (e) {
+      print("No workout data for $id");
+      return null;
+    }
   }
 
   ///Structures and posts the data to the database
@@ -47,9 +51,9 @@ class DatabaseUtility extends ChangeNotifier {
       print("Cannot submit an empty workout list");
       return;
     }
-
     //construct the data
-    String timestamp = "${DateTime.now().month}-${DateTime.now().day}";
+    String timestamp =
+        "${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().year}";
     var exercises = [];
     int index = 0;
 
@@ -77,21 +81,24 @@ class DatabaseUtility extends ChangeNotifier {
   }
 
   ///####### JOURNAL FUNCTIONS #######
-  ///get all previous journal entries
-  Future<List<JournalModel>> getAllJournals() async {
-    final db = FirebaseFirestore.instance;
-    final snapshot = await db.collection("journals").get();
-    return snapshot.docs.map((e) => JournalModel.fromFirestore(e)).toList();
-  }
-
   //get a single journal entry
-  Future<JournalModel> getJournal(String timestamp) async {
-    final db = FirebaseFirestore.instance;
-    final snapshot = await db
-        .collection("journals")
-        .where("date", isEqualTo: timestamp)
-        .get();
-    return snapshot.docs.map((e) => JournalModel.fromFirestore(e)).single;
+  Future<JournalModel?> getJournal(String id) async {
+    try {
+      JournalModel journal = JournalModel(date: id, entry: "", rating: "");
+      final journalRef =
+          FirebaseFirestore.instance.collection("journals").doc(id);
+      await journalRef.get().then((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        JournalModel tmp = JournalModel(
+            date: id, entry: data["entry"], rating: data["rating"]);
+        journal = tmp;
+      });
+      return journal;
+    } catch (e) {
+      print("No journal data for $id");
+      //return an empty object so the widget can still be rendered
+      return null;
+    }
   }
 
   //structures and posts the data to the database
@@ -101,9 +108,9 @@ class DatabaseUtility extends ChangeNotifier {
       print("cannot submit an empty journal");
       return;
     }
-
     //post the data
-    String timestamp = "${DateTime.now().month}-${DateTime.now().day}";
+    String timestamp =
+        "${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().year}";
     CollectionReference journals =
         FirebaseFirestore.instance.collection("journals");
     await journals.doc(timestamp).set({
@@ -123,9 +130,9 @@ class DatabaseUtility extends ChangeNotifier {
       print("Cannot submit an empty diet entry");
       return;
     }
-
     //post the data
-    String timestamp = "${DateTime.now().month}-${DateTime.now().day}";
+    String timestamp =
+        "${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().year}";
     CollectionReference diet = FirebaseFirestore.instance.collection("diet");
     await diet.doc(timestamp).set({
       "entry": entry,
@@ -135,18 +142,20 @@ class DatabaseUtility extends ChangeNotifier {
     });
   }
 
-  ///Get all diet entries
-  Future<List<DietModel>> getAllDietEntries() async {
-    final db = FirebaseFirestore.instance;
-    final snapshot = await db.collection("diet").get();
-    return snapshot.docs.map((e) => DietModel.fromFirestore(e)).toList();
-  }
-
   ///Get a single diet entry
-  Future<DietModel> getDietEntry(String timestamp) async {
-    final db = FirebaseFirestore.instance;
-    final snapshot =
-        await db.collection("diet").where("date", isEqualTo: timestamp).get();
-    return snapshot.docs.map((e) => DietModel.fromFirestore(e)).single;
+  Future<DietModel?> getDietEntry(String id) async {
+    try {
+      DietModel diet = DietModel(date: id, entry: "");
+      final dietRef = FirebaseFirestore.instance.collection("diet").doc(id);
+      await dietRef.get().then((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        DietModel tmp = DietModel(date: id, entry: data["entry"]);
+        diet = tmp;
+      });
+      return diet;
+    } catch (e) {
+      print("No diet data for $id");
+      return null;
+    }
   }
 }

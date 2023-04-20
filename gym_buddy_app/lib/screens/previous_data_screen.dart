@@ -40,41 +40,55 @@ class _PreviousDataPageState extends State<PreviousDataPage> {
                 children: [
                   // Diet entry
                   SafeArea(
-                    child: ListTile(
-                      title: Text(
-                        "Diet Entry:",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text("${diet.entry}"),
-                    ),
+                    child: diet != null
+                        ? ListTile(
+                            title: Text(
+                              "Diet Entry:",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text("${diet.entry}"),
+                          )
+                        : Text("No diet entry data for today."),
                   ),
                   // Journal entry
                   SafeArea(
-                    child: ListTile(
-                      title: Text("Journal Entry:",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle:
-                          Text("${journal.entry} \nRating: ${journal.rating}"),
-                    ),
+                    child: journal != null
+                        ? ListTile(
+                            title: Text("Journal Entry:",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text(
+                                "${journal.entry} \nRating: ${journal.rating}"),
+                          )
+                        : Text("No journal data for today."),
                   ),
                   // Exercise ListView
                   Expanded(
                     child: Card(
-                      child: ListView.builder(
-                        itemCount: workouts.exercises.length,
-                        itemBuilder: (context, index) => PreviousExerciseTile(
-                            exerciseName: workouts.exercises[index].name,
-                            weight: workouts.exercises[index].weight,
-                            reps: workouts.exercises[index].reps,
-                            sets: workouts.exercises[index].sets,
-                            isCompleted: workouts.exercises[index].isCompleted),
-                      ),
+                      child: workouts != null
+                          ? ListView.builder(
+                              itemCount: workouts.exercises.length,
+                              itemBuilder: (context, index) =>
+                                  PreviousExerciseTile(
+                                      exerciseName:
+                                          workouts.exercises[index].name,
+                                      weight: workouts.exercises[index].weight,
+                                      reps: workouts.exercises[index].reps,
+                                      sets: workouts.exercises[index].sets,
+                                      isCompleted: workouts
+                                          .exercises[index].isCompleted),
+                            )
+                          : Center(
+                              child:
+                                  Text("There is no workout data for today."),
+                            ),
                     ),
                   ),
                 ],
               );
             } else {
-              return Text("Theres no data for the selected day.");
+              return Center(
+                child: Text("Theres no data for the selected day."),
+              );
             }
           }
           if (snapshot.hasError) {

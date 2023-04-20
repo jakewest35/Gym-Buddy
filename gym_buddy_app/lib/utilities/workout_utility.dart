@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/models/exercise_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Manages creating workouts and exercises locally.
 ///
@@ -24,15 +27,21 @@ class WorkoutUtility extends ChangeNotifier {
   // get a list of workouts
   List<ExerciseModel> get getCurrentWorkout => _currentWorkout;
 
+  // set the list of workouts
+  void setCurrentWorkout(List<ExerciseModel> workout) {
+    _currentWorkout = workout;
+  }
+
   ///clear the current workout list
   void clearWorkout() {
     _currentWorkout.clear();
+    _updateState();
     notifyListeners();
   }
 
   void printCurrentWorkout() {
     if (_currentWorkout.isEmpty) {
-      print("No exercises in list");
+      print("WorkoutUtility::printCurrentWorkout: No exercises in list");
       return;
     }
     for (var item in _currentWorkout) {
@@ -43,15 +52,21 @@ class WorkoutUtility extends ChangeNotifier {
 
   ///mark the exercise as completed
   void checkOffExercise(String exerciseName) {
+    print("WorkoutUtility::checkOffExercise: printing current workout list");
+    printCurrentWorkout();
+
     //find the exercise
     try {
       ExerciseModel tmp = _currentWorkout
           .firstWhere((exercise) => exercise.name == exerciseName);
       tmp.isCompleted = !tmp.isCompleted;
-      print("Toggled completed status of $exerciseName to ${tmp.isCompleted}");
+      print(
+          "WorkoutUtility::checkOffExercise: Toggled completed status of $exerciseName to ${tmp.isCompleted}");
+      _updateState();
       notifyListeners();
     } catch (e) {
-      print("couldn't find exercise to mark as completed");
+      print(
+          "WorkoutUtility::checkOffExercise: couldn't find exercise to mark as completed");
     }
   }
 
@@ -60,15 +75,21 @@ class WorkoutUtility extends ChangeNotifier {
   void addExercise(
       String exerciseName, String weight, String reps, String sets) {
     try {
+      //create the new exercise object
       var tmp = ExerciseModel(
           name: exerciseName, weight: weight, reps: reps, sets: sets);
+
+      // add to the workout list before updating state
       _currentWorkout.add(tmp);
+
+      // update the shared_preferences state
+      _updateState();
+      notifyListeners();
       print(
-          "added exercise: $exerciseName at $weight lbs. for $sets sets of $reps reps.");
+          "WorkoutUtility::addExercise: added exercise: $exerciseName at $weight lbs. for $sets sets of $reps reps.");
     } catch (e) {
-      print("Couldn't add the exercise");
+      print("WorkoutUtility::addExercise, Couldn't add the exercise");
     }
-    notifyListeners();
   }
 
   /// remove an exercise from the workout
@@ -78,9 +99,32 @@ class WorkoutUtility extends ChangeNotifier {
           .firstWhere((exercise) => exercise.name == exerciseName);
       _currentWorkout.remove(tmp);
       print("Deleted $exerciseName");
+      _updateState();
       notifyListeners();
     } catch (e) {
       print("Error removing $exerciseName. $e");
+    }
+  }
+
+  /// STATE MANAGMENT FUNCTIONS
+
+  /// overwrites the current snapshot of the state and saves
+  /// the current snapshot
+  void _updateState() async {
+    final prefs = await SharedPreferences.getInstance();
+    // JsonEncode the current workout if it exists
+    if (_currentWorkout.isNotEmpty) {
+      print("In WorkoutUtility::_updateState:");
+      printCurrentWorkout();
+      final jsonList =
+          jsonEncode(_currentWorkout.map((e) => e.toJson()).toList());
+      print("WorkoutUtility::_updateState(): jsonList = $jsonList");
+      // update the state
+      await prefs
+          .setString("state", jsonList)
+          .then((value) => print("updated state."));
+    } else {
+      print("WorkoutUtility::_updateState(): state is already empty");
     }
   }
 }
