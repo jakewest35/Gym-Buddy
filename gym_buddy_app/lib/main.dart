@@ -1,13 +1,15 @@
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:gym_buddy_app/themes/color_schemes.g.dart';
 import 'package:provider/provider.dart';
 import 'utilities/app_state.dart';
 import 'package:go_router/go_router.dart';
-import 'utilities/page_loader.dart';
+import 'utilities/side_bar.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash(); // show the splash screen
   runApp(
     ChangeNotifierProvider(
       create: (context) => ApplicationState(),
@@ -21,7 +23,7 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => PageLoader(),
+      builder: (context, state) => SideBar(),
       routes: [
         ///sign in route
         GoRoute(
