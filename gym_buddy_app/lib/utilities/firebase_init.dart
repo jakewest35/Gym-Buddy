@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import '../firebase_options.dart';
 
 /// Initializes Firebase and lists authentication providers.
-class ApplicationState extends ChangeNotifier {
-  ApplicationState() {
+class UserAuthenticationState extends ChangeNotifier {
+  UserAuthenticationState() {
     init();
   }
   //credential variables

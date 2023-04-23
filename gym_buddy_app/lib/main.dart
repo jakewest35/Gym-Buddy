@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:gym_buddy_app/themes/color_schemes.g.dart';
 import 'package:provider/provider.dart';
-import 'utilities/app_state.dart';
+import 'utilities/firebase_init.dart';
 import 'package:go_router/go_router.dart';
 import 'utilities/side_bar.dart';
 
@@ -12,7 +12,7 @@ void main() {
   FlutterNativeSplash(); // show the splash screen
   runApp(
     ChangeNotifierProvider(
-      create: (context) => ApplicationState(),
+      create: (context) => UserAuthenticationState(),
       builder: (context, child) => App(),
     ),
   );
@@ -31,9 +31,7 @@ final _router = GoRouter(
           builder: (context, state) {
             ///wrap in Scaffold to provide back button functionality
             return Scaffold(
-              appBar: AppBar(
-                title: const Text(""),
-              ),
+              appBar: AppBar(),
               body: SignInScreen(
                 actions: [
                   ForgotPasswordAction(((context, email) {
@@ -117,7 +115,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Gym Buddy',
+      title: 'Gym-Buddy',
       debugShowCheckedModeBanner: false, //disables debug flag on simulator
       theme: ThemeData(
           useMaterial3: true, colorScheme: CustomTheme.lightColorScheme),

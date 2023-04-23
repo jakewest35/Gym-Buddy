@@ -5,12 +5,10 @@ import 'package:flutter_signin_button/button_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import '../widgets/authentication_widget.dart';
-
 /// Handles the authentication workflow for the dashboard login/logout
-/// button. Redirects to src/authentication.dart
-class AuthenticationPage extends StatefulWidget {
-  AuthenticationPage({
+/// button.
+class GoogleAuthenticationPage extends StatefulWidget {
+  GoogleAuthenticationPage({
     super.key,
     required this.loggedIn,
     required this.signOut,
@@ -20,10 +18,11 @@ class AuthenticationPage extends StatefulWidget {
   final void Function() signOut;
 
   @override
-  State<AuthenticationPage> createState() => _AuthenticationPageState();
+  State<GoogleAuthenticationPage> createState() =>
+      _GoogleAuthenticationPageState();
 }
 
-class _AuthenticationPageState extends State<AuthenticationPage> {
+class _GoogleAuthenticationPageState extends State<GoogleAuthenticationPage> {
   GoogleSignInAccount? _googleUser;
   @override
   void initState() {
@@ -41,6 +40,8 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     _googleSignIn.signInSilently();
   }
 
+  /// Define ALL allowed authentication scopes for the application,
+  /// not just the Google scope(s).
   GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
       'email',
@@ -48,6 +49,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     ],
   );
 
+  /// Sign into Google
   Future<void> _handleGoogleSignIn() async {
     try {
       await _googleSignIn.signIn();
@@ -56,16 +58,18 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     }
   }
 
+  /// Sign out
   Future<void> _handleGoogleSignOut() => _googleSignIn.disconnect();
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 24, bottom: 8),
-          child: StyledButton(
+        /// login/logout button formatting
+        SizedBox(
+          width: 225.0,
+          child: ElevatedButton(
             onPressed: () {
               if (_googleUser == null) {
                 !widget.loggedIn ? context.push('/sign-in') : widget.signOut();
@@ -77,6 +81,8 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
             },
             child:
                 !widget.loggedIn ? const Text('Login') : const Text('Logout'),
+            style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero)),
           ),
         ),
         Visibility(
@@ -84,7 +90,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: SignInButton(
-                Buttons.Google,
+                Buttons.GoogleDark,
                 onPressed: () {
                   _handleGoogleSignIn();
                 },

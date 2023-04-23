@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:gym_buddy_app/utilities/app_state.dart';
+import 'package:gym_buddy_app/utilities/firebase_init.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/diet_screen.dart';
 import '../screens/journal_screen.dart';
 import '../screens/workout_screen.dart';
 
 /// Main page loader/sidebar logic for the application
-class PageLoader extends StatefulWidget {
+class SideBar extends StatefulWidget {
   @override
-  State<PageLoader> createState() => _PageLoaderState();
+  State<SideBar> createState() => _SideBarState();
 }
 
-class _PageLoaderState extends State<PageLoader> {
+class _SideBarState extends State<SideBar> {
   var _selectedIndex = 0;
-  final _appState = ApplicationState();
+  final _appState = UserAuthenticationState();
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +62,7 @@ class _PageLoaderState extends State<PageLoader> {
                     label: Text('Workout Log'),
                   ),
                   NavigationRailDestination(
-                      icon: Icon(Icons.restaurant), label: Text('Diet log')),
+                      icon: Icon(Icons.restaurant), label: Text('Meal log')),
                   NavigationRailDestination(
                       icon: Icon(Icons.mood), label: Text("Journal")),
                 ],
