@@ -8,11 +8,13 @@ class ExpandableFab extends StatefulWidget {
     this.initialOpen,
     required this.distance,
     required this.children,
+    this.backgroundColor,
   });
 
   final bool? initialOpen;
   final double distance;
   final List<Widget> children;
+  final Color? backgroundColor;
 
   @override
   State<ExpandableFab> createState() => _ExpandableFabState();
@@ -46,6 +48,7 @@ class _ExpandableFabState extends State<ExpandableFab>
     super.dispose();
   }
 
+  // toggle open/close animation
   void _toggle() {
     setState(() {
       _open = !_open;
@@ -66,7 +69,7 @@ class _ExpandableFabState extends State<ExpandableFab>
         children: [
           _buildTapToCloseFab(),
           ..._buildExpandingActionButtons(),
-          _buildTapToOpenFab(),
+          _buildTapToOpenFab(widget.backgroundColor),
         ],
       ),
     );
@@ -118,7 +121,7 @@ class _ExpandableFabState extends State<ExpandableFab>
   }
 
   //opening animation
-  Widget _buildTapToOpenFab() {
+  Widget _buildTapToOpenFab(Color? backgroundColor) {
     return IgnorePointer(
       ignoring: _open,
       child: AnimatedContainer(
@@ -135,6 +138,7 @@ class _ExpandableFabState extends State<ExpandableFab>
           curve: const Interval(0.25, 1.0, curve: Curves.easeInOut),
           duration: const Duration(milliseconds: 250),
           child: FloatingActionButton(
+            backgroundColor: backgroundColor != null ? backgroundColor : null,
             onPressed: _toggle,
             child: const Icon(Icons.create),
           ),
