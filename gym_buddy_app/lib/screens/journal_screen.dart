@@ -29,6 +29,25 @@ class _JournalPageState extends State<JournalPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.mood,
+              size: 100.0,
+            ),
+            SizedBox(
+              height: 120.0,
+            ),
+          ],
+        ),
+        Padding(
+          padding: EdgeInsets.only(bottom: 45.0),
+          child: Text(
+            "Journal Log",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30.0),
+          ),
+        ),
         TextFormField(
           controller: _textController,
           decoration: InputDecoration(
