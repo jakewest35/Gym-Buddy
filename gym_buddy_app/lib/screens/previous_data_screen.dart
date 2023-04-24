@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/utilities/database_utility.dart';
+import 'package:gym_buddy_app/widgets/meal_tile.dart';
 
 import '../widgets/previous_exercise_tile.dart';
 
@@ -17,6 +18,8 @@ class PreviousDataPage extends StatefulWidget {
 
 class _PreviousDataPageState extends State<PreviousDataPage> {
   DatabaseUtility _db = DatabaseUtility();
+  //Text Styleing constants
+  final fontSize = 20.0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,56 +28,85 @@ class _PreviousDataPageState extends State<PreviousDataPage> {
       ),
       body: FutureBuilder(
         future: Future.wait([
-          _db.getWorkout(widget.date),
-          _db.getDietEntry(widget.date),
           _db.getJournal(widget.date),
+          _db.getDietEntry(widget.date),
+          _db.getWorkout(widget.date),
         ]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasData) {
               List<dynamic> results = snapshot.data!;
-              final workouts = results[0];
-              final diet = results[1];
-              final journal = results[2];
+              final journalLog = results[0];
+              final dietLog = results[1];
+              final workoutsLog = results[2];
               return Column(
                 children: [
-                  // Diet entry
-                  SafeArea(
-                    child: diet != null
-                        ? ListTile(
-                            title: Text(
-                              "Diet Entry:",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text("${diet.entry}"),
-                          )
-                        : Text("No diet entry data for today."),
+                  SizedBox(
+                    height: 25.0,
                   ),
                   // Journal entry
                   SafeArea(
-                    child: journal != null
-                        ? ListTile(
-                            title: Text("Journal Entry:",
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text(
-                                "${journal.entry} \nRating: ${journal.rating}"),
+                    child: journalLog != null
+                        ? Column(
+                            children: [
+                              Text(
+                                "Journal Entry",
+                                style: TextStyle(
+                                    fontSize: fontSize,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                "${journalLog.entry}",
+                                style: TextStyle(fontSize: 18.0),
+                              ),
+                            ],
                           )
                         : Text("No journal data for today."),
                   ),
+                  // Diet entry
+                  Text(
+                    "Meal List:",
+                    style: TextStyle(
+                        fontSize: fontSize, fontWeight: FontWeight.bold),
+                  ),
+                  SafeArea(
+                    child: dietLog != null
+                        ? ListView.builder(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.vertical,
+                            itemCount: dietLog.length,
+                            itemBuilder: (context, index) => MealTile(
+                              mealName: dietLog[index].mealName,
+                              calories: dietLog[index].calories,
+                              fats: dietLog[index].fats,
+                              carbs: dietLog[index].carbs,
+                              protein: dietLog[index].protein,
+                            ),
+                          )
+                        : Text("No diet entry data for today."),
+                  ),
                   // Exercise ListView
-                  Expanded(
+                  Text(
+                    "Workout Log",
+                    style: TextStyle(
+                        fontSize: fontSize, fontWeight: FontWeight.bold),
+                  ),
+                  SafeArea(
                     child: Card(
-                      child: workouts != null
+                      child: workoutsLog != null
                           ? ListView.builder(
-                              itemCount: workouts.exercises.length,
+                              shrinkWrap: true,
+                              scrollDirection: Axis.vertical,
+                              itemCount: workoutsLog.exercises.length,
                               itemBuilder: (context, index) =>
                                   PreviousExerciseTile(
                                       exerciseName:
-                                          workouts.exercises[index].name,
-                                      weight: workouts.exercises[index].weight,
-                                      reps: workouts.exercises[index].reps,
-                                      sets: workouts.exercises[index].sets,
-                                      isCompleted: workouts
+                                          workoutsLog.exercises[index].name,
+                                      weight:
+                                          workoutsLog.exercises[index].weight,
+                                      reps: workoutsLog.exercises[index].reps,
+                                      sets: workoutsLog.exercises[index].sets,
+                                      isCompleted: workoutsLog
                                           .exercises[index].isCompleted),
                             )
                           : Center(

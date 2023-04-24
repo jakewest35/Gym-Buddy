@@ -2,8 +2,8 @@ import 'dart:core';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:gym_buddy_app/models/diet_model.dart';
 
+import '../models/diet_model.dart';
 import '../models/exercise_model.dart';
 import '../models/journal_model.dart';
 import '../models/workout_model.dart';
@@ -124,37 +124,54 @@ class DatabaseUtility extends ChangeNotifier {
 
   ///####### DIET FUNCTIONS #######
   ///Structures and posts the diet data to the database
-  void postDiet(String entry) async {
+  void postDiet(List<DietModel> entriesList) async {
     //ensure that the diet entry is populated before posting to the database
-    if (entry.isEmpty) {
-      print("Cannot submit an empty diet entry");
+    if (entriesList.isEmpty) {
+      print("Cannot submit an empty meal list");
       return;
     }
-    //post the data
+    //Format the data
     String timestamp =
         "${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().year}";
-    CollectionReference diet = FirebaseFirestore.instance.collection("diet");
-    await diet.doc(timestamp).set({
-      "entry": entry,
-    }).then((value) => print("Successfully posted diet entry to database."),
+
+    var dietList = [];
+    int index = 0;
+    for (var item in entriesList) {
+      dietList.insert(index, item.toJson());
+      index++;
+    }
+
+    //Post the data
+    CollectionReference diets = FirebaseFirestore.instance.collection("diet");
+    await diets.doc(timestamp).set({"dietEntries": dietList}).then(
+        (value) => print("Successfully posted the meal list to database"),
         onError: (e) {
-      print("Error posting the diet entry to the database. Error: $e");
+      print("Error posting meal list to the database. Error: $e");
     });
+    notifyListeners();
   }
 
   ///Get a single diet entry
-  Future<DietModel?> getDietEntry(String id) async {
+  Future<List<DietModel>?> getDietEntry(String id) async {
     try {
-      DietModel diet = DietModel(date: id, entry: "");
+      List<DietModel> mealList = [];
       final dietRef = FirebaseFirestore.instance.collection("diet").doc(id);
       await dietRef.get().then((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        DietModel tmp = DietModel(date: id, entry: data["entry"]);
-        diet = tmp;
+        for (var meal in data["dietEntries"]) {
+          DietModel tmp = DietModel(
+              mealName: meal["mealName"],
+              calories: meal["calories"],
+              fats: meal["fats"],
+              carbs: meal["carbs"],
+              protein: meal["protein"]);
+          mealList.add(tmp);
+        }
       });
-      return diet;
+      print("Found diet ${mealList.length} entries.");
+      return mealList;
     } catch (e) {
-      print("No diet data for $id");
+      print("No diet data for $id. Error: $e");
       return null;
     }
   }
