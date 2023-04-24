@@ -32,17 +32,29 @@ class _ExerciseTileState extends State<ExerciseTile> {
       ),
       margin: EdgeInsets.only(bottom: 10.0),
       child: ListTile(
-        title: Text(widget.exerciseName),
+        title: Text(
+          widget.exerciseName,
+          style: TextStyle(fontSize: 15.0),
+        ),
         subtitle: Row(
           children: [
             Chip(
-              label: Text("${widget.weight} lbs."),
+              label: Text(
+                "${widget.weight} lbs.",
+                style: TextStyle(fontSize: 11.0),
+              ),
             ),
             Chip(
-              label: Text("${widget.sets} sets"),
+              label: Text(
+                "${widget.sets} sets",
+                style: TextStyle(fontSize: 11.0),
+              ),
             ),
             Chip(
-              label: Text("${widget.reps} reps"),
+              label: Text(
+                "${widget.reps} reps",
+                style: TextStyle(fontSize: 11.0),
+              ),
             ),
           ],
         ),

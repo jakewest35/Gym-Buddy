@@ -30,35 +30,35 @@ class _MealTileState extends State<MealTile> {
       ),
       margin: EdgeInsets.only(bottom: 10.0),
       child: ListTile(
-        title: Center(
-            child: Text(
+        title: Text(
           widget.mealName,
-          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-        )),
+          style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
+        ),
         subtitle: SafeArea(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Chip(
-                    label: Text("${widget.calories} cal"),
+                    label: Text(
+                      "${widget.calories} cal",
+                    ),
                   ),
                   Chip(
-                    label: Text("${widget.fats} fat"),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Chip(
-                    label: Text("${widget.carbs} carb."),
+                    label: Text(
+                      "${widget.fats} fat",
+                    ),
                   ),
                   Chip(
-                    label: Text("${widget.protein} protein"),
+                    label: Text(
+                      "${widget.carbs} carb.",
+                    ),
+                  ),
+                  Chip(
+                    label: Text(
+                      "${widget.protein} protein",
+                    ),
                   ),
                 ],
               ),
