@@ -3,7 +3,6 @@ import 'package:gym_buddy_app/models/diet_model.dart';
 import 'package:gym_buddy_app/utilities/database_utility.dart';
 import 'package:gym_buddy_app/utilities/diet_utility.dart';
 import 'package:gym_buddy_app/widgets/exapndable_fab.dart';
-import 'package:gym_buddy_app/widgets/meal_tile.dart';
 import 'package:provider/provider.dart';
 
 class DietPage extends StatelessWidget {
@@ -235,22 +234,53 @@ class _DietScreenState extends State<DietScreen> {
                     direction: DismissDirection.endToStart,
                     key: Key(dietEntries[index].mealName),
                     onDismissed: (direction) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(
-                              "Removed ${dietEntries[index].mealName} from the meal log!"),
-                        ),
-                      );
                       Provider.of<DietUtility>(context, listen: false)
                           .removeDietEntry(dietEntries[index].mealName);
                     },
-                    child: MealTile(
-                      mealName: dietEntries[index].mealName,
-                      calories: dietEntries[index].calories,
-                      fats: dietEntries[index].fats,
-                      carbs: dietEntries[index].carbs,
-                      protein: dietEntries[index].protein,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.grey,
+                          borderRadius: BorderRadius.circular(12)),
+                      margin: EdgeInsets.only(bottom: 10.0),
+                      child: ListTile(
+                        title: Text(
+                          dietEntries[index].mealName,
+                          style: TextStyle(
+                              fontSize: 15.0, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: SafeArea(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Chip(
+                                label: Text(
+                                  "${dietEntries[index].calories} cal.",
+                                  style: TextStyle(fontSize: 10.0),
+                                ),
+                              ),
+                              Chip(
+                                label: Text(
+                                  "${dietEntries[index].fats} fat",
+                                  style: TextStyle(fontSize: 10.0),
+                                ),
+                              ),
+                              Chip(
+                                label: Text(
+                                  "${dietEntries[index].carbs} carb.",
+                                  style: TextStyle(fontSize: 10.0),
+                                ),
+                              ),
+                              Chip(
+                                label: Text(
+                                  "${dietEntries[index].protein} protein",
+                                  style: TextStyle(fontSize: 10.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -260,144 +290,5 @@ class _DietScreenState extends State<DietScreen> {
         ),
       ),
     );
-    // return Consumer<DietUtility>(
-    //   builder: (context, value, child) => SafeArea(
-    //     child: Padding(
-    //       padding: EdgeInsets.only(right: 20.0),
-    //       child: ExpandableFab(
-    //         backgroundColor: Theme.of(context).cardColor,
-    //         distance: 112.0,
-    //         children: [
-    // // add meal button
-    // ActionButton(
-    //   icon: const Icon(Icons.add),
-    //   toolTip: "Add a meal.",
-    //   onPressed: () {
-    //     setState(() {
-    //       addMealAlertDialog(context);
-    //     });
-    //   },
-    // ),
-    //           // post diet list button
-    //           ActionButton(
-    //             icon: const Icon(Icons.save),
-    //             toolTip: "Save the meal list.",
-    //             onPressed: () {
-    //               List<DietModel> entries = value.getDietEntriesList;
-    //               if (entries.isNotEmpty) {
-    //                 db.postDiet(entries);
-    //                 showDialog(
-    //                   context: context,
-    //                   builder: (context) => AlertDialog(
-    //                     title: Text("Meal list saved!"),
-    //                     actions: [
-    //                       MaterialButton(
-    //                           child: Text("Ok"),
-    //                           onPressed: () {
-    //                             Navigator.pop(context);
-    //                           })
-    //                     ],
-    //                   ),
-    //                 );
-    //               } else {
-    //                 showDialog(
-    //                   context: context,
-    //                   builder: (context) => AlertDialog(
-    //                     title: Text(
-    //                         "Can't save an empty meal list. Try adding a meal before saving."),
-    //                     actions: [
-    //                       MaterialButton(
-    //                           child: Text("Ok"),
-    //                           onPressed: () {
-    //                             Navigator.pop(context);
-    //                           })
-    //                     ],
-    //                   ),
-    //                 );
-    //               }
-    //             },
-    //           ),
-    //           // clear diet list button
-    //           ActionButton(
-    //             icon: Icon(Icons.not_interested),
-    //             toolTip: "Clear the meal list",
-    //             onPressed: () {
-    //               resetState();
-    //               showDialog(
-    //                 context: context,
-    //                 builder: (context) => AlertDialog(
-    //                   title: Text("Reset meal list!"),
-    //                   actions: [
-    //                     MaterialButton(
-    //                       child: Text("OK"),
-    //                       onPressed: () {
-    //                         Navigator.pop(context);
-    //                       },
-    //                     ),
-    //                   ],
-    //                 ),
-    //               );
-    //             },
-    //           ),
-    //           // print current workout button
-    //           ActionButton(
-    //               //!DELETE AFTER DONE DEBUGGING
-    //               icon: Icon(Icons.print),
-    //               onPressed: () {
-    //                 Provider.of<DietUtility>(context, listen: false)
-    //                     .printDietList();
-    //               },
-    //               toolTip: "Print the current meal list to the console.")
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    //   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-    //     Row(
-    //       mainAxisAlignment: MainAxisAlignment.center,
-    //       children: [Text("Test")],
-    //     ),
-    //     ListView.builder(
-    //       scrollDirection: Axis.vertical,
-    //       shrinkWrap: true,
-    //       itemCount: dietEntries.length,
-    //       itemBuilder: (context, index) {
-    //         return Column(
-    //           children: [
-    //             Dismissible(
-    //                 background: Container(
-    //                   color: Colors.red,
-    //                   alignment: Alignment.centerRight,
-    //                   child: Padding(
-    //                     padding: EdgeInsets.only(right: 20.0),
-    //                     child: Icon(Icons.delete),
-    //                   ),
-    //                 ),
-    //                 direction: DismissDirection.endToStart,
-    //                 key: Key(dietEntries[index].mealName),
-    //                 onDismissed: (direction) {
-    //                   Provider.of<DietUtility>(context)
-    //                       .removeDietEntry(dietEntries[index].mealName);
-    //                   showDialog(
-    //                     context: context,
-    //                     builder: (context) => AlertDialog(
-    //                       title: Text(
-    //                           "Removed ${dietEntries[index].mealName} from the meal log!"),
-    //                     ),
-    //                   );
-    //                 },
-    //                 child: MealTile(
-    //                   mealName: dietEntries[index].mealName,
-    //                   calories: dietEntries[index].calories,
-    //                   fats: dietEntries[index].fats,
-    //                   carbs: dietEntries[index].carbs,
-    //                   protein: dietEntries[index].protein,
-    //                 )),
-    //           ],
-    //         );
-    //       },
-    //     ),
-    //   ]),
-    // );
   }
 }
