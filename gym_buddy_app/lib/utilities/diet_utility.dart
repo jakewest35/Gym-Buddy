@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/models/diet_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DietUtility extends ChangeNotifier {
   List<DietModel> dietEntries = [];
@@ -10,6 +13,7 @@ class DietUtility extends ChangeNotifier {
   // set the diet list
   void setDietEntriesList(List<DietModel> list) {
     dietEntries = list;
+    _updateState();
     notifyListeners();
   }
 
@@ -17,6 +21,7 @@ class DietUtility extends ChangeNotifier {
   void clearDietList() {
     dietEntries.clear();
     printDietList();
+    _updateState();
     notifyListeners();
   }
 
@@ -44,6 +49,7 @@ class DietUtility extends ChangeNotifier {
           protein: protein);
       dietEntries.add(newEntry);
       print("dietUtility::addDietEntry: added $mealName to the list.");
+      _updateState();
       notifyListeners();
     } catch (e) {
       print("Unable to add diet entry. Error: $e");
@@ -59,6 +65,22 @@ class DietUtility extends ChangeNotifier {
     } catch (e) {
       print("Couldn't find $mealName in the dietEntries list");
     }
+    _updateState();
     notifyListeners();
+  }
+
+  void _updateState() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (dietEntries.isNotEmpty) {
+      print("In DietUtility::_updateState():");
+      printDietList();
+      final jsonList = jsonEncode(dietEntries.map((e) => e.toJson()).toList());
+      print("DietUtility::_updateState: jsonList = $jsonList");
+      await prefs
+          .setString("dietState", jsonList)
+          .then((value) => print("Updated diet state"));
+    } else {
+      print("DietUtility::_updateState(): state is already empty.");
+    }
   }
 }

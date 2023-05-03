@@ -1,9 +1,13 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/models/diet_model.dart';
 import 'package:gym_buddy_app/utilities/database_utility.dart';
 import 'package:gym_buddy_app/utilities/diet_utility.dart';
 import 'package:gym_buddy_app/widgets/exapndable_fab.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DietPage extends StatelessWidget {
   const DietPage({super.key});
@@ -28,13 +32,37 @@ class _DietScreenState extends State<DietScreen> {
   DatabaseUtility db = DatabaseUtility();
   List<DietModel> dietEntries = [];
   String mealName = "", calories = "", fats = "", carbs = "", protein = "";
+  late SharedPreferences prefs;
+
+  @override
+  void initState() {
+    _initPreferences();
+    super.initState();
+  }
+
+  void _initPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    final jsonList = prefs.getString("dietState");
+    if (kDebugMode) {
+      print("jsonList: $jsonList");
+    }
+    if (jsonList != null) {
+      List<dynamic> jsonParsed = jsonDecode(jsonList);
+      setState(() {
+        dietEntries = jsonParsed.map((e) => DietModel.fromJson(e)).toList();
+      });
+      Provider.of<DietUtility>(context, listen: false)
+          .setDietEntriesList(dietEntries);
+    } else {
+      print("_initPreferences: No previous state.");
+    }
+  }
 
   /// Reset the shared_preferences state. Used if the user wants
   /// to reset or clear their meal list
   void resetState() {
     setState(() {
       Provider.of<DietUtility>(context, listen: false).clearDietList();
-      dietEntries = [];
     });
     print("set diet state = null");
   }
@@ -148,6 +176,7 @@ class _DietScreenState extends State<DietScreen> {
                 List<DietModel> entries = value.getDietEntriesList;
                 if (entries.isNotEmpty) {
                   db.postDiet(entries);
+                  prefs.remove("dietState");
                   Provider.of<DietUtility>(context, listen: false)
                       .clearDietList();
                   showDialog(
@@ -203,15 +232,6 @@ class _DietScreenState extends State<DietScreen> {
                 );
               },
             ),
-            // print current workout button
-            ActionButton(
-                //!DELETE AFTER DONE DEBUGGING
-                icon: Icon(Icons.print),
-                onPressed: () {
-                  Provider.of<DietUtility>(context, listen: false)
-                      .printDietList();
-                },
-                toolTip: "Print the current meal list to the console.")
           ],
         ),
         body: SafeArea(
