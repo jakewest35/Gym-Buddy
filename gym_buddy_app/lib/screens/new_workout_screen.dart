@@ -1,23 +1,15 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/models/exercise_model.dart';
 import 'package:gym_buddy_app/utilities/database_utility.dart';
-import 'package:gym_buddy_app/widgets/exercise_tile.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utilities/workout_utility.dart';
-import '../widgets/workout_exapndable_fab.dart';
-
-class WorkoutScreenHandler extends StatelessWidget {
-  const WorkoutScreenHandler({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => WorkoutUtility(),
-      child: WorkoutScreen(),
-    );
-  }
-}
+import '../widgets/exercise_tile.dart';
+import '../widgets/exapndable_fab.dart';
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -28,7 +20,55 @@ class WorkoutScreen extends StatefulWidget {
 
 class _WorkoutScreenState extends State<WorkoutScreen> {
   DatabaseUtility db = DatabaseUtility();
+  List<ExerciseModel> exercises = [];
   String sets = '0', reps = '0', weight = '0';
+  late SharedPreferences prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    _initPreferences(); // ensure preferences are initialized before widget tree is built
+  }
+
+//! STATE MANAGMENT FUNCTIONS
+
+  /// initialize shared_preferences and set the state if it exists.
+  void _initPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    final jsonList = prefs.getString("state");
+    if (kDebugMode) {
+      print("jsonList: $jsonList");
+    }
+
+    /// if a previous state exists, parse it and set
+    /// it as the current exercise list
+    if (jsonList != null) {
+      print("$jsonList");
+      List<dynamic> jsonParsed = jsonDecode(jsonList);
+      setState(() {
+        exercises = jsonParsed
+            .map((exercise) => ExerciseModel.fromJson(exercise))
+            .toList();
+        // set the list of exercises equal to the parsed list from the previous state
+        Provider.of<WorkoutUtility>(context, listen: false)
+            .setCurrentWorkout(exercises);
+      });
+    } else {
+      print("_initPreferences: No previous state.");
+    }
+  }
+
+  /// Reset the shared_preferences state. Used if the user wants
+  /// to reset or clear their workout
+  void resetState() {
+    setState(() {
+      prefs.clear();
+      exercises.clear();
+    });
+    print("set workout state = null");
+  }
+
+  //! EXERCISE SPECIFIC FUNCTIONS
 
   ///Alert dialog to display the UI to add an exercise to the current workout
   void addExerciseAlertDialog(BuildContext context) {
@@ -89,7 +129,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             )));
   }
 
-  ///Add the exercise to the current local workout
+  ///Add the exercise to the current local workout and save the state
   void save(String name, String weight, String sets, String reps) {
     Provider.of<WorkoutUtility>(context, listen: false)
         .addExercise(name, weight, reps, sets);
@@ -112,18 +152,23 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         floatingActionButton: ExpandableFab(
           distance: 112.0,
           children: [
+            // add exercise button
             ActionButton(
-                onPressed: () => value.printCurrentWorkout(),
-                icon: Icon(Icons.print)),
-            ActionButton(
-              onPressed: () => addExerciseAlertDialog(context),
+              onPressed: () {
+                setState(() {
+                  addExerciseAlertDialog(context);
+                });
+              },
               icon: const Icon(Icons.add),
+              toolTip: "Add an exercise",
             ),
+            // post workout button
             ActionButton(
               onPressed: () {
                 List<ExerciseModel> workout = value.getCurrentWorkout;
                 if (workout.isNotEmpty) {
                   db.postWorkout(workout);
+                  prefs.remove("state");
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -142,7 +187,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: Text("Can't submit an empty workout"),
+                      title: Text(
+                          "Can't save an empty workout. Try adding an exercise before saving."),
                       actions: [
                         MaterialButton(
                             child: Text("Ok"),
@@ -155,49 +201,69 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 }
               },
               icon: const Icon(Icons.save),
+              toolTip: "Save the workout to the database",
             ),
+            // clear workout list button
+            ActionButton(
+                icon: Icon(Icons.not_interested),
+                onPressed: () {
+                  resetState();
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text("Cleared workout log!"),
+                      actions: [
+                        MaterialButton(
+                          child: Text("OK"),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                toolTip: "Clear the current workout"),
           ],
         ),
         body: Column(
           children: [
-            Expanded(
-              child: ListView.builder(
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                itemCount: value.getCurrentWorkout.length,
-                itemBuilder: (context, index) {
-                  ExerciseModel eachExercise = value.getCurrentWorkout[index];
-                  return Column(
-                    children: [
-                      Dismissible(
-                        key: Key(eachExercise.name),
-                        background: Container(color: Colors.red),
-                        onDismissed: (direction) {
-                          Provider.of<WorkoutUtility>(context, listen: false)
-                              .removeExercise(eachExercise.name);
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: Text(
-                                "Deleted ${eachExercise.name}!",
-                              ),
-                            ),
-                          );
-                        },
-                        child: ExerciseTile(
-                            exerciseName: eachExercise.name,
-                            weight: eachExercise.weight,
-                            reps: eachExercise.reps,
-                            sets: eachExercise.sets,
-                            isCompleted: eachExercise.isCompleted,
-                            onCheckboxChanged: (val) {
-                              onCheckboxChanged(eachExercise.name);
-                            }),
+            // render all exercises
+            ListView.builder(
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
+              itemCount: exercises.length,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    Dismissible(
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 20.0),
+                          child: Icon(Icons.delete),
+                        ),
                       ),
-                    ],
-                  );
-                },
-              ),
+                      direction: DismissDirection.endToStart,
+                      key: Key(exercises[index].name),
+                      onDismissed: (direction) {
+                        Provider.of<WorkoutUtility>(context, listen: false)
+                            .removeExercise(exercises[index].name);
+                      },
+                      child: ExerciseTile(
+                          exerciseName: exercises[index].name,
+                          weight: exercises[index].weight,
+                          reps: exercises[index].reps,
+                          sets: exercises[index].sets,
+                          isCompleted: exercises[index].isCompleted,
+                          onCheckboxChanged: (val) {
+                            onCheckboxChanged(exercises[index].name);
+                          }),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),

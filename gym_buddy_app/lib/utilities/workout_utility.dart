@@ -30,6 +30,8 @@ class WorkoutUtility extends ChangeNotifier {
   // set the list of workouts
   void setCurrentWorkout(List<ExerciseModel> workout) {
     _currentWorkout = workout;
+    _updateState();
+    notifyListeners();
   }
 
   ///clear the current workout list
