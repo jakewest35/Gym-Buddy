@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/utilities/firebase_init.dart';
+import 'package:gym_buddy_app/utilities/workout_utility.dart';
+import 'package:provider/provider.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/diet_screen.dart';
 import '../screens/journal_screen.dart';
@@ -27,7 +29,10 @@ class _SideBarState extends State<SideBar> {
           page = DashboardPage();
           break;
         case 1:
-          page = WorkoutPage();
+          page = ChangeNotifierProvider(
+            create: (context) => WorkoutUtility(),
+            builder: (context, child) => WorkoutPage(),
+          );
           break;
         case 2:
           page = DietPage();

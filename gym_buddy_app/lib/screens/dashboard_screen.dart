@@ -90,6 +90,13 @@ class _DashboardPageState extends State<DashboardPage> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Icon(
+            Icons.fitness_center,
+            size: 100.0,
+          ),
+          SizedBox(
+            height: 30.0,
+          ),
           Text(
             "Welcome to Gym-Buddy!",
             style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),

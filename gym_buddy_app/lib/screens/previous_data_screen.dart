@@ -48,6 +48,7 @@ class _PreviousDataPageState extends State<PreviousDataPage> {
                   SafeArea(
                     child: journalLog != null
                         ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 "Journal Entry",
@@ -58,6 +59,7 @@ class _PreviousDataPageState extends State<PreviousDataPage> {
                               Text(
                                 "${journalLog.entry}",
                               ),
+                              Text("Rating: ${journalLog.rating}"),
                             ],
                           )
                         : Center(child: Text("No journal data for today.")),
