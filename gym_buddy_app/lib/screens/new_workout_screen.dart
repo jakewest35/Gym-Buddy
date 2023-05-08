@@ -36,14 +36,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   void _initPreferences() async {
     prefs = await SharedPreferences.getInstance();
     final jsonList = prefs.getString("state");
-    if (kDebugMode) {
-      print("jsonList: $jsonList");
-    }
+    if (kDebugMode) print("jsonList: $jsonList");
 
     /// if a previous state exists, parse it and set
     /// it as the current exercise list
     if (jsonList != null) {
-      print("$jsonList");
+      if (kDebugMode) print("$jsonList");
       List<dynamic> jsonParsed = jsonDecode(jsonList);
       setState(() {
         exercises = jsonParsed
@@ -53,7 +51,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         Provider.of<WorkoutUtility>(context, listen: false)
             .setCurrentWorkout(exercises);
       });
-    } else {
+    } else if (kDebugMode) {
       print("_initPreferences: No previous state.");
     }
   }
@@ -65,7 +63,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       prefs.clear();
       exercises.clear();
     });
-    print("set workout state = null");
+    if (kDebugMode) print("set workout state = null");
   }
 
   //! EXERCISE SPECIFIC FUNCTIONS
@@ -133,6 +131,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   void save(String name, String weight, String sets, String reps) {
     Provider.of<WorkoutUtility>(context, listen: false)
         .addExercise(name, weight, reps, sets);
+
+    /// update the local exercise list after setting the private exercise
+    /// list and updating shared_preferences state. This is useful when a user
+    /// is trying to add exercises when they first load the page and no previous state exists.
+    setState(() {
+      exercises =
+          Provider.of<WorkoutUtility>(context, listen: false).getCurrentWorkout;
+    });
   }
 
   ///checkbox was tapped, toggle exercise completed status
@@ -250,6 +256,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                       onDismissed: (direction) {
                         Provider.of<WorkoutUtility>(context, listen: false)
                             .removeExercise(exercises[index].name);
+                        if (Provider.of<WorkoutUtility>(context, listen: false)
+                                .getCurrentWorkout
+                                .length ==
+                            0) {
+                          prefs.remove("state");
+                        }
                       },
                       child: ExerciseTile(
                           exerciseName: exercises[index].name,
