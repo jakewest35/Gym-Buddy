@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:gym_buddy_app/models/exercise_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -54,7 +54,8 @@ class WorkoutUtility extends ChangeNotifier {
 
   ///mark the exercise as completed
   void checkOffExercise(String exerciseName) {
-    print("WorkoutUtility::checkOffExercise: printing current workout list");
+    if (kDebugMode)
+      print("WorkoutUtility::checkOffExercise: printing current workout list");
     printCurrentWorkout();
 
     //find the exercise
@@ -62,13 +63,15 @@ class WorkoutUtility extends ChangeNotifier {
       ExerciseModel tmp = _currentWorkout
           .firstWhere((exercise) => exercise.name == exerciseName);
       tmp.isCompleted = !tmp.isCompleted;
-      print(
-          "WorkoutUtility::checkOffExercise: Toggled completed status of $exerciseName to ${tmp.isCompleted}");
+      if (kDebugMode)
+        print(
+            "WorkoutUtility::checkOffExercise: Toggled completed status of $exerciseName to ${tmp.isCompleted}");
       _updateState();
       notifyListeners();
     } catch (e) {
-      print(
-          "WorkoutUtility::checkOffExercise: couldn't find exercise to mark as completed");
+      if (kDebugMode)
+        print(
+            "WorkoutUtility::checkOffExercise: couldn't find exercise to mark as completed");
     }
   }
 
@@ -86,11 +89,12 @@ class WorkoutUtility extends ChangeNotifier {
 
       // update the shared_preferences state
       _updateState();
-      notifyListeners();
-      print(
-          "WorkoutUtility::addExercise: added exercise: $exerciseName at $weight lbs. for $sets sets of $reps reps.");
+      if (kDebugMode)
+        print(
+            "WorkoutUtility::addExercise: added exercise: $exerciseName at $weight lbs. for $sets sets of $reps reps.");
     } catch (e) {
-      print("WorkoutUtility::addExercise, Couldn't add the exercise");
+      if (kDebugMode)
+        print("WorkoutUtility::addExercise, Couldn't add the exercise");
     }
   }
 
@@ -100,11 +104,11 @@ class WorkoutUtility extends ChangeNotifier {
       ExerciseModel tmp = _currentWorkout
           .firstWhere((exercise) => exercise.name == exerciseName);
       _currentWorkout.remove(tmp);
-      print("Deleted $exerciseName");
+      if (kDebugMode) print("Deleted $exerciseName");
       _updateState();
       notifyListeners();
     } catch (e) {
-      print("Error removing $exerciseName. $e");
+      if (kDebugMode) print("Error removing $exerciseName. $e");
     }
   }
 
@@ -116,17 +120,20 @@ class WorkoutUtility extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     // JsonEncode the current workout if it exists
     if (_currentWorkout.isNotEmpty) {
-      print("In WorkoutUtility::_updateState:");
+      if (kDebugMode) print("In WorkoutUtility::_updateState:");
       printCurrentWorkout();
       final jsonList =
           jsonEncode(_currentWorkout.map((e) => e.toJson()).toList());
-      print("WorkoutUtility::_updateState(): jsonList = $jsonList");
+      if (kDebugMode)
+        print("WorkoutUtility::_updateState(): jsonList = $jsonList");
       // update the state
-      await prefs
-          .setString("state", jsonList)
-          .then((value) => print("updated state."));
+      await prefs.setString("state", jsonList).then((value) {
+        if (kDebugMode) print("updated state.");
+      });
     } else {
-      print("WorkoutUtility::_updateState(): state is already empty");
+      if (kDebugMode)
+        print("WorkoutUtility::_updateState(): state is already empty");
     }
+    notifyListeners();
   }
 }
