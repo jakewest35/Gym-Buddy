@@ -53,7 +53,7 @@ class _DietScreenState extends State<DietScreen> {
       });
       Provider.of<DietUtility>(context, listen: false)
           .setDietEntriesList(dietEntries);
-    } else {
+    } else if (kDebugMode) {
       print("_initPreferences: No previous state.");
     }
   }
@@ -64,7 +64,7 @@ class _DietScreenState extends State<DietScreen> {
     setState(() {
       Provider.of<DietUtility>(context, listen: false).clearDietList();
     });
-    print("set diet state = null");
+    if (kDebugMode) print("set diet state = null");
   }
 
   ///Add the exercise to the current local workout and save the state
@@ -256,6 +256,12 @@ class _DietScreenState extends State<DietScreen> {
                     onDismissed: (direction) {
                       Provider.of<DietUtility>(context, listen: false)
                           .removeDietEntry(dietEntries[index].mealName);
+                      if (Provider.of<DietUtility>(context, listen: false)
+                              .getDietEntriesList
+                              .length ==
+                          0) {
+                        prefs.remove("dietState");
+                      }
                     },
                     child: Container(
                       decoration: BoxDecoration(

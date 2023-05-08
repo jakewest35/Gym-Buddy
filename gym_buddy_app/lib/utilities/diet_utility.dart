@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:gym_buddy_app/models/diet_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,11 +48,12 @@ class DietUtility extends ChangeNotifier {
           carbs: carbs,
           protein: protein);
       dietEntries.add(newEntry);
-      print("dietUtility::addDietEntry: added $mealName to the list.");
+      if (kDebugMode)
+        print("dietUtility::addDietEntry: added $mealName to the list.");
       _updateState();
       notifyListeners();
     } catch (e) {
-      print("Unable to add diet entry. Error: $e");
+      if (kDebugMode) print("Unable to add diet entry. Error: $e");
     }
   }
 
@@ -63,7 +64,7 @@ class DietUtility extends ChangeNotifier {
           dietEntries.firstWhere((element) => element.mealName == mealName);
       dietEntries.remove(tmp);
     } catch (e) {
-      print("Couldn't find $mealName in the dietEntries list");
+      if (kDebugMode) print("Couldn't find $mealName in the dietEntries list");
     }
     _updateState();
     notifyListeners();
@@ -72,15 +73,16 @@ class DietUtility extends ChangeNotifier {
   void _updateState() async {
     final prefs = await SharedPreferences.getInstance();
     if (dietEntries.isNotEmpty) {
-      print("In DietUtility::_updateState():");
+      if (kDebugMode) print("In DietUtility::_updateState():");
       printDietList();
       final jsonList = jsonEncode(dietEntries.map((e) => e.toJson()).toList());
-      print("DietUtility::_updateState: jsonList = $jsonList");
-      await prefs
-          .setString("dietState", jsonList)
-          .then((value) => print("Updated diet state"));
+      if (kDebugMode) print("DietUtility::_updateState: jsonList = $jsonList");
+      await prefs.setString("dietState", jsonList).then((value) {
+        if (kDebugMode) print("Updated diet state");
+      });
     } else {
-      print("DietUtility::_updateState(): state is already empty.");
+      if (kDebugMode)
+        print("DietUtility::_updateState(): state is already empty.");
     }
   }
 }

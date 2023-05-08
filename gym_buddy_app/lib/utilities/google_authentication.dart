@@ -54,7 +54,7 @@ class _GoogleAuthenticationPageState extends State<GoogleAuthenticationPage> {
     try {
       await _googleSignIn.signIn();
     } catch (error) {
-      print(error);
+      if (kDebugMode) print(error);
     }
   }
 

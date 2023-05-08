@@ -1,7 +1,7 @@
 import 'dart:core';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/diet_model.dart';
 import '../models/exercise_model.dart';
@@ -39,7 +39,7 @@ class DatabaseUtility extends ChangeNotifier {
       });
       return workout;
     } catch (e) {
-      print("No workout data for $id");
+      if (kDebugMode) print("No workout data for $id");
       return null;
     }
   }
@@ -48,7 +48,7 @@ class DatabaseUtility extends ChangeNotifier {
   void postWorkout(List<ExerciseModel> workoutList) async {
     ///ensuring that a user cannot submit an empty workout
     if (workoutList.isEmpty) {
-      print("Cannot submit an empty workout list");
+      if (kDebugMode) ("Cannot submit an empty workout list");
       return;
     }
     //construct the data
@@ -72,7 +72,9 @@ class DatabaseUtility extends ChangeNotifier {
     CollectionReference workouts =
         FirebaseFirestore.instance.collection("workouts");
     await workouts.doc(timestamp).set({"exercises": exercises}).then(
-      (value) => print("Successfully posted workout to database."),
+      (value) {
+        if (kDebugMode) print("Successfully posted workout to database.");
+      },
       onError: (e) {
         print("Error posting to the database. Error: $e");
       },
@@ -95,7 +97,7 @@ class DatabaseUtility extends ChangeNotifier {
       });
       return journal;
     } catch (e) {
-      print("No journal data for $id");
+      if (kDebugMode) print("No journal data for $id");
       //return an empty object so the widget can still be rendered
       return null;
     }
@@ -105,7 +107,7 @@ class DatabaseUtility extends ChangeNotifier {
   void postJournalEntry(String entry, String rating) async {
     //ensure that the journal is populated before posting to db
     if (entry.isEmpty) {
-      print("cannot submit an empty journal");
+      if (kDebugMode) print("cannot submit an empty journal");
       return;
     }
     //post the data
@@ -116,9 +118,11 @@ class DatabaseUtility extends ChangeNotifier {
     await journals.doc(timestamp).set({
       "entry": entry,
       "rating": rating,
-    }).then((value) => print("Successfully posted journal entry to database."),
-        onError: (e) {
-      print("Error posting the journal to the database. Error: $e");
+    }).then((value) {
+      if (kDebugMode) print("Successfully posted journal entry to database.");
+    }, onError: (e) {
+      if (kDebugMode)
+        print("Error posting the journal to the database. Error: $e");
     });
   }
 
@@ -127,7 +131,7 @@ class DatabaseUtility extends ChangeNotifier {
   void postDiet(List<DietModel> entriesList) async {
     //ensure that the diet entry is populated before posting to the database
     if (entriesList.isEmpty) {
-      print("Cannot submit an empty meal list");
+      if (kDebugMode) print("Cannot submit an empty meal list");
       return;
     }
     //Format the data
@@ -143,10 +147,11 @@ class DatabaseUtility extends ChangeNotifier {
 
     //Post the data
     CollectionReference diets = FirebaseFirestore.instance.collection("diet");
-    await diets.doc(timestamp).set({"dietEntries": dietList}).then(
-        (value) => print("Successfully posted the meal list to database"),
-        onError: (e) {
-      print("Error posting meal list to the database. Error: $e");
+    await diets.doc(timestamp).set({"dietEntries": dietList}).then((value) {
+      if (kDebugMode) print("Successfully posted the meal list to database");
+    }, onError: (e) {
+      if (kDebugMode)
+        print("Error posting meal list to the database. Error: $e");
     });
     notifyListeners();
   }
@@ -168,10 +173,10 @@ class DatabaseUtility extends ChangeNotifier {
           mealList.add(tmp);
         }
       });
-      print("Found diet ${mealList.length} entries.");
+      if (kDebugMode) print("Found diet ${mealList.length} entries.");
       return mealList;
     } catch (e) {
-      print("No diet data for $id. Error: $e");
+      if (kDebugMode) print("No diet data for $id. Error: $e");
       return null;
     }
   }
