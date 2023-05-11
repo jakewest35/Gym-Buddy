@@ -235,47 +235,50 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         body: Column(
           children: [
             // render all exercises
-            ListView.builder(
-              scrollDirection: Axis.vertical,
-              shrinkWrap: true,
-              itemCount: exercises.length,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    Dismissible(
-                      background: Container(
-                        color: Colors.red,
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 20.0),
-                          child: Icon(Icons.delete),
+            Expanded(
+              child: ListView.builder(
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemCount: exercises.length,
+                itemBuilder: (context, index) {
+                  return Column(
+                    children: [
+                      Dismissible(
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 20.0),
+                            child: Icon(Icons.delete),
+                          ),
                         ),
+                        direction: DismissDirection.endToStart,
+                        key: Key(exercises[index].name),
+                        onDismissed: (direction) {
+                          Provider.of<WorkoutUtility>(context, listen: false)
+                              .removeExercise(exercises[index].name);
+                          if (Provider.of<WorkoutUtility>(context,
+                                      listen: false)
+                                  .getCurrentWorkout
+                                  .length ==
+                              0) {
+                            prefs.remove("state");
+                          }
+                        },
+                        child: ExerciseTile(
+                            exerciseName: exercises[index].name,
+                            weight: exercises[index].weight,
+                            reps: exercises[index].reps,
+                            sets: exercises[index].sets,
+                            isCompleted: exercises[index].isCompleted,
+                            onCheckboxChanged: (val) {
+                              onCheckboxChanged(exercises[index].name);
+                            }),
                       ),
-                      direction: DismissDirection.endToStart,
-                      key: Key(exercises[index].name),
-                      onDismissed: (direction) {
-                        Provider.of<WorkoutUtility>(context, listen: false)
-                            .removeExercise(exercises[index].name);
-                        if (Provider.of<WorkoutUtility>(context, listen: false)
-                                .getCurrentWorkout
-                                .length ==
-                            0) {
-                          prefs.remove("state");
-                        }
-                      },
-                      child: ExerciseTile(
-                          exerciseName: exercises[index].name,
-                          weight: exercises[index].weight,
-                          reps: exercises[index].reps,
-                          sets: exercises[index].sets,
-                          isCompleted: exercises[index].isCompleted,
-                          onCheckboxChanged: (val) {
-                            onCheckboxChanged(exercises[index].name);
-                          }),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             ),
           ],
         ),

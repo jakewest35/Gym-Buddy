@@ -275,35 +275,38 @@ class _DietScreenState extends State<DietScreen> {
                               fontSize: 15.0, fontWeight: FontWeight.bold),
                         ),
                         subtitle: SafeArea(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Chip(
-                                label: Text(
-                                  "${dietEntries[index].calories} cal.",
-                                  style: TextStyle(fontSize: 10.0),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Chip(
+                                  label: Text(
+                                    "${dietEntries[index].calories} cal.",
+                                    style: TextStyle(fontSize: 10.0),
+                                  ),
                                 ),
-                              ),
-                              Chip(
-                                label: Text(
-                                  "${dietEntries[index].fats} fat",
-                                  style: TextStyle(fontSize: 10.0),
+                                Chip(
+                                  label: Text(
+                                    "${dietEntries[index].fats} fat",
+                                    style: TextStyle(fontSize: 10.0),
+                                  ),
                                 ),
-                              ),
-                              Chip(
-                                label: Text(
-                                  "${dietEntries[index].carbs} carb.",
-                                  style: TextStyle(fontSize: 10.0),
+                                Chip(
+                                  label: Text(
+                                    "${dietEntries[index].carbs} carb.",
+                                    style: TextStyle(fontSize: 10.0),
+                                  ),
                                 ),
-                              ),
-                              Chip(
-                                label: Text(
-                                  "${dietEntries[index].protein} protein",
-                                  style: TextStyle(fontSize: 10.0),
+                                Chip(
+                                  label: Text(
+                                    "${dietEntries[index].protein} protein",
+                                    style: TextStyle(fontSize: 10.0),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
