@@ -9,6 +9,10 @@ import '../models/journal_model.dart';
 import '../models/workout_model.dart';
 
 class DatabaseUtility extends ChangeNotifier {
+  // timestamp used when posting any data to the DB
+  String timestamp =
+      "${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().year}";
+
   ///####### WORKOUT FUNCTIONS #######
   ///get all workouts from the database
   Future<List<String>> getAllWorkoutDates() async {
@@ -52,8 +56,6 @@ class DatabaseUtility extends ChangeNotifier {
       return;
     }
     //construct the data
-    String timestamp =
-        "${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().year}";
     var exercises = [];
     int index = 0;
 
@@ -111,8 +113,6 @@ class DatabaseUtility extends ChangeNotifier {
       return;
     }
     //post the data
-    String timestamp =
-        "${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().year}";
     CollectionReference journals =
         FirebaseFirestore.instance.collection("journals");
     await journals.doc(timestamp).set({
@@ -135,8 +135,6 @@ class DatabaseUtility extends ChangeNotifier {
       return;
     }
     //Format the data
-    String timestamp =
-        "${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().year}";
 
     var dietList = [];
     int index = 0;
