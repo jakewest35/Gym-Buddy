@@ -33,6 +33,12 @@ class _DietScreenState extends State<DietScreen> {
   List<DietModel> dietEntries = [];
   String mealName = "", calories = "", fats = "", carbs = "", protein = "";
   late SharedPreferences prefs;
+  Map<String, int> macroTotals = {
+    "Fat": 0,
+    "Carbs": 0,
+    "Protein": 0,
+    "TotalCalories": 0,
+  };
 
   @override
   void initState() {
@@ -42,19 +48,37 @@ class _DietScreenState extends State<DietScreen> {
 
   void _initPreferences() async {
     prefs = await SharedPreferences.getInstance();
-    final jsonList = prefs.getString("dietState");
-    if (kDebugMode) {
-      print("jsonList: $jsonList");
-    }
-    if (jsonList != null) {
-      List<dynamic> jsonParsed = jsonDecode(jsonList);
+
+    // decode meal list if it exists
+    final jsonMealList = prefs.getString("dietState");
+    if (jsonMealList != null) {
+      List<dynamic> jsonParsed = jsonDecode(jsonMealList);
       setState(() {
         dietEntries = jsonParsed.map((e) => DietModel.fromJson(e)).toList();
       });
       Provider.of<DietUtility>(context, listen: false)
           .setDietEntriesList(dietEntries);
-    } else if (kDebugMode) {
-      print("_initPreferences: No previous state.");
+    }
+
+    // decode macros if they exist
+    final jsonMacroMap = prefs.getString("macroState");
+    if (jsonMacroMap != null) {
+      Map<String, dynamic> jsonParsed = jsonDecode(jsonMacroMap);
+      setState(() {
+        macroTotals =
+            jsonParsed.map((key, value) => MapEntry(key, value as int));
+      });
+      Provider.of<DietUtility>(context, listen: false)
+          .setMacroTotals(macroTotals);
+    }
+
+    if (kDebugMode) {
+      if (jsonMealList == null) {
+        print("_initPreferences: No previous meal state.");
+      }
+      if (jsonMacroMap == null) {
+        print("_initPreferences: No previous macro state.");
+      }
     }
   }
 
@@ -63,17 +87,33 @@ class _DietScreenState extends State<DietScreen> {
   void resetState() {
     setState(() {
       Provider.of<DietUtility>(context, listen: false).clearDietList();
+      macroTotals =
+          Provider.of<DietUtility>(context, listen: false).getMacroTotals;
     });
     if (kDebugMode) print("set diet state = null");
+  }
+
+  // update macros
+  void updateMacros(
+      String operation, int fat, int carbs, int protein, int calories) {
+    Provider.of<DietUtility>(context, listen: false)
+        .updateMacros(operation, fat, carbs, protein, calories);
   }
 
   ///Add the exercise to the current local workout and save the state
   void save(String mealName, String calories, String fats, String carbs,
       String protein) {
+    // save/update meals
     Provider.of<DietUtility>(context, listen: false)
         .addDietEntry(mealName, calories, fats, carbs, protein);
     dietEntries =
         Provider.of<DietUtility>(context, listen: false).getDietEntriesList;
+
+    // save/update macros
+    updateMacros("add", int.parse(fats), int.parse(carbs), int.parse(protein),
+        int.parse(calories));
+    macroTotals =
+        Provider.of<DietUtility>(context, listen: false).getMacroTotals;
   }
 
   ///Alert dialog to display the UI to add an exercise to the current workout
@@ -235,86 +275,132 @@ class _DietScreenState extends State<DietScreen> {
           ],
         ),
         body: SafeArea(
-          child: ListView.builder(
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemCount: dietEntries.length,
-            itemBuilder: (context, index) {
-              return Column(
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Dismissible(
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 20.0),
-                        child: Icon(Icons.delete),
-                      ),
+                  Text(
+                    "Total Fat: ${macroTotals["Fat"]} g.",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
                     ),
-                    direction: DismissDirection.endToStart,
-                    key: Key(dietEntries[index].mealName),
-                    onDismissed: (direction) {
-                      Provider.of<DietUtility>(context, listen: false)
-                          .removeDietEntry(dietEntries[index].mealName);
-                      if (Provider.of<DietUtility>(context, listen: false)
-                              .getDietEntriesList
-                              .length ==
-                          0) {
-                        prefs.remove("dietState");
-                      }
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Colors.grey,
-                          borderRadius: BorderRadius.circular(12)),
-                      margin: EdgeInsets.only(bottom: 10.0),
-                      child: ListTile(
-                        title: Text(
-                          dietEntries[index].mealName,
-                          style: TextStyle(
-                              fontSize: 15.0, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    "Total Protein: ${macroTotals["Protein"]} g.",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text(
+                    "Total Carbs: ${macroTotals["Carbs"]}g.",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    "Total Calories: ${macroTotals["TotalCalories"]} cal.",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Divider(
+                color: Colors.grey,
+                thickness: 2,
+              ),
+              ListView.builder(
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemCount: dietEntries.length,
+                itemBuilder: (context, index) {
+                  return Column(
+                    children: [
+                      Dismissible(
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 20.0),
+                            child: Icon(Icons.delete),
+                          ),
                         ),
-                        subtitle: SafeArea(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Chip(
-                                  label: Text(
-                                    "${dietEntries[index].calories} cal.",
-                                    style: TextStyle(fontSize: 10.0),
-                                  ),
+                        direction: DismissDirection.endToStart,
+                        key: Key(dietEntries[index].mealName),
+                        onDismissed: (direction) {
+                          Provider.of<DietUtility>(context, listen: false)
+                              .removeDietEntry(dietEntries[index].mealName);
+                          if (Provider.of<DietUtility>(context, listen: false)
+                                  .getDietEntriesList
+                                  .length ==
+                              0) {
+                            prefs.remove("dietState");
+                            prefs.remove("macrosState");
+                          }
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(12)),
+                          margin: EdgeInsets.only(bottom: 10.0),
+                          child: ListTile(
+                            title: Text(
+                              dietEntries[index].mealName,
+                              style: TextStyle(
+                                fontSize: 15.0,
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            subtitle: SafeArea(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Chip(
+                                      label: Text(
+                                        "${dietEntries[index].calories} cal.",
+                                        style: TextStyle(fontSize: 10.0),
+                                      ),
+                                    ),
+                                    Chip(
+                                      label: Text(
+                                        "${dietEntries[index].fats} fat",
+                                        style: TextStyle(fontSize: 10.0),
+                                      ),
+                                    ),
+                                    Chip(
+                                      label: Text(
+                                        "${dietEntries[index].carbs} carb.",
+                                        style: TextStyle(fontSize: 10.0),
+                                      ),
+                                    ),
+                                    Chip(
+                                      label: Text(
+                                        "${dietEntries[index].protein} protein",
+                                        style: TextStyle(fontSize: 10.0),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Chip(
-                                  label: Text(
-                                    "${dietEntries[index].fats} fat",
-                                    style: TextStyle(fontSize: 10.0),
-                                  ),
-                                ),
-                                Chip(
-                                  label: Text(
-                                    "${dietEntries[index].carbs} carb.",
-                                    style: TextStyle(fontSize: 10.0),
-                                  ),
-                                ),
-                                Chip(
-                                  label: Text(
-                                    "${dietEntries[index].protein} protein",
-                                    style: TextStyle(fontSize: 10.0),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),
