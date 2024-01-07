@@ -84,8 +84,8 @@ class _JournalPageState extends State<JournalPage> {
         ),
         TextField(
           decoration: InputDecoration(
-            hintText: "Enter today's weight",
-            errorText: _weightValid ? "Enter today's weight" : null,
+            hintText: "Enter today's bodyweight in lbs.",
+            errorText: _weightValid ? "Enter today's bodyweight in lbs." : null,
           ),
           keyboardType: TextInputType.numberWithOptions(decimal: true),
           controller: _weightController,
