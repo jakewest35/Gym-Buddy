@@ -48,11 +48,13 @@ class _JournalPageState extends State<JournalPage> {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30.0),
           ),
         ),
-        TextFormField(
+        TextField(
           controller: _textController,
+          maxLines: 10,
           decoration: InputDecoration(
             labelText: "How did you feel today?",
             errorText: _journalValid ? "Journal can't be empty" : null,
+            border: OutlineInputBorder(),
           ),
           onChanged: (value) {
             if (_textController.text.isNotEmpty) {
@@ -63,7 +65,7 @@ class _JournalPageState extends State<JournalPage> {
             }
           },
         ),
-        TextFormField(
+        TextField(
           decoration: InputDecoration(
               hintText: "Rate how you felt from 1-10",
               errorText: _ratingValid ? "Enter a rating" : null),

@@ -28,6 +28,7 @@ class _DashboardPageState extends State<DashboardPage> {
               children: [
                 Text(
                   "Welcome back, \n$userName!",
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 25.0,
                       fontWeight: FontWeight.bold,

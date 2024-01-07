@@ -52,12 +52,17 @@ class _PreviousDataPageState extends State<PreviousDataPage> {
                             children: [
                               Text(
                                 "Journal Entry",
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontSize: fontSize,
                                     fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 "${journalLog.entry}",
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(
+                                height: 20.0,
                               ),
                               Text("Rating: ${journalLog.rating}"),
                             ],
