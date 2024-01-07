@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:gym_buddy_app/screens/new_workout_screen.dart';
 import 'package:gym_buddy_app/utilities/firebase_init.dart';
 import 'package:gym_buddy_app/utilities/workout_utility.dart';
 import 'package:provider/provider.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/diet_screen.dart';
 import '../screens/journal_screen.dart';
-import '../screens/workout_screen.dart';
 
 /// Main page loader/sidebar logic for the application
 class SideBar extends StatefulWidget {
@@ -31,7 +31,7 @@ class _SideBarState extends State<SideBar> {
         case 1:
           page = ChangeNotifierProvider(
             create: (context) => WorkoutUtility(),
-            builder: (context, child) => WorkoutPage(),
+            builder: (context, child) => WorkoutScreen(),
           );
           break;
         case 2:

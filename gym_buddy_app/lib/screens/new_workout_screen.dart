@@ -152,8 +152,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     return Consumer<WorkoutUtility>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
-          title: Text("Current workout"),
-          backgroundColor: Theme.of(context).focusColor,
+          title: Text(
+            "Current workout",
+            style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),
+          ),
         ),
         floatingActionButton: ExpandableFab(
           distance: 112.0,
