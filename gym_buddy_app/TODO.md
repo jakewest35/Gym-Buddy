@@ -1,5 +1,6 @@
 # TODO List
 
+## Version 1.0
 - [x] Fix the state managament bug on the new_workout_screen
 - [x] Implmement state management feature on diet log screen once the above has been fixed
 - [x] Add backlog of data for previous dates
@@ -10,22 +11,23 @@
 ## Version 2.0
 - [ ] Redesign logic flow
   - **General**:
-    - [ ] Create consistent data entry formats
+    - [x] Create consistent data entry formats
     - [ ] Give the user the option to append to a data entry if it has already been posted to the database
   - **Dashboard Page**
     - [ ] Change date picker from wheel to calendar format
   - **Workout Log**:
-    - [ ] Remove "View previous workouts" button in workout log (this data will be made available in the overall data retrieval feature)
+    - [x] Remove "View previous workouts" button in workout log (this data will be made available in the overall data retrieval feature)
+    - [x] Only have 1 screen: workout data entry
     - [ ] Add support for non-weight lifting workouts (cardio, hockey, etc.)
-    - [ ] Only have 1 screen: workout data entry
   - **Meal Log**:
     - [ ] Look into MyFitnessPal API integration?
     - [ ] Add a "Save to favorites" feature that will allow the user to save meals that are frequently consumed
       - Could just be a flag and, when checked, will add the meal to a list of favorites for the current user.
-    - [ ] Add an a summary of their total calories and macros to the page
+    - [x] Add an a summary of their total calories and macros to the page
+      - Style the info
     - [ ] Auto complete?
   - **Journal Log**
-    - tbd
+    - [x] Add field for bodyweight entry in journal log (this data will be made available in the overall data retrieval)
 - [ ] **Redesign UI**
   - Add a "see your progress" type of button to the home screen and present the user with the following options:
     - Get all data for a previous day
