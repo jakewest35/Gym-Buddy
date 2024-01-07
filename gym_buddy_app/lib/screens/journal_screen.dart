@@ -12,8 +12,10 @@ class _JournalPageState extends State<JournalPage> {
   DatabaseUtility _db = DatabaseUtility();
   final _textController = TextEditingController();
   final _ratingController = TextEditingController();
+  final _weightController = TextEditingController();
   bool _journalValid = false;
   bool _ratingValid = false;
+  bool _weightValid = false;
 
   //dispose of the controller when the widget is unmounted
   @override
@@ -25,7 +27,7 @@ class _JournalPageState extends State<JournalPage> {
 
   @override
   Widget build(BuildContext context) {
-    String journal = "", rating = "";
+    String journal = "", rating = "", weight = "";
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -80,10 +82,26 @@ class _JournalPageState extends State<JournalPage> {
             }
           },
         ),
+        TextField(
+          decoration: InputDecoration(
+            hintText: "Enter today's weight",
+            errorText: _weightValid ? "Enter today's weight" : null,
+          ),
+          keyboardType: TextInputType.numberWithOptions(decimal: true),
+          controller: _weightController,
+          onChanged: (value) {
+            if (_weightController.text.isNotEmpty) {
+              weight = value.toString();
+              _weightValid = true;
+            } else {
+              _weightValid = false;
+            }
+          },
+        ),
         ElevatedButton(
             onPressed: () {
-              if (_ratingValid && _journalValid) {
-                _db.postJournalEntry(journal, rating);
+              if (_ratingValid && _journalValid && _weightValid) {
+                _db.postJournalEntry(journal, rating, weight);
                 showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -99,6 +117,7 @@ class _JournalPageState extends State<JournalPage> {
                         ));
                 _ratingController.clear();
                 _textController.clear();
+                _weightController.clear();
               } else if (_journalValid == false) {
                 showDialog(
                   context: context,
@@ -118,6 +137,20 @@ class _JournalPageState extends State<JournalPage> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: Text("Make sure rating is not empty"),
+                    actions: [
+                      MaterialButton(
+                          child: Text("Ok"),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          })
+                    ],
+                  ),
+                );
+              } else if (_weightValid == false) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text("Make sure weight is not empty"),
                     actions: [
                       MaterialButton(
                           child: Text("Ok"),

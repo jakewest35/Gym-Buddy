@@ -88,13 +88,18 @@ class DatabaseUtility extends ChangeNotifier {
   //get a single journal entry
   Future<JournalModel?> getJournal(String id) async {
     try {
-      JournalModel journal = JournalModel(date: id, entry: "", rating: "");
+      JournalModel journal =
+          JournalModel(date: id, entry: "", rating: "", weight: "");
       final journalRef =
           FirebaseFirestore.instance.collection("journals").doc(id);
       await journalRef.get().then((doc) {
         final data = doc.data() as Map<String, dynamic>;
         JournalModel tmp = JournalModel(
-            date: id, entry: data["entry"], rating: data["rating"]);
+            date: id,
+            entry: data["entry"],
+            rating: data["rating"],
+            // do null check for weight since it was added after initial journal data was entered
+            weight: data["weight"] != null ? data["weight"] : "");
         journal = tmp;
       });
       return journal;
@@ -106,7 +111,7 @@ class DatabaseUtility extends ChangeNotifier {
   }
 
   //structures and posts the data to the database
-  void postJournalEntry(String entry, String rating) async {
+  void postJournalEntry(String entry, String rating, String weight) async {
     //ensure that the journal is populated before posting to db
     if (entry.isEmpty) {
       if (kDebugMode) print("cannot submit an empty journal");
@@ -115,10 +120,10 @@ class DatabaseUtility extends ChangeNotifier {
     //post the data
     CollectionReference journals =
         FirebaseFirestore.instance.collection("journals");
-    await journals.doc(timestamp).set({
-      "entry": entry,
-      "rating": rating,
-    }).then((value) {
+    await journals
+        .doc(timestamp)
+        .set({"entry": entry, "rating": rating, "weight": weight}).then(
+            (value) {
       if (kDebugMode) print("Successfully posted journal entry to database.");
     }, onError: (e) {
       if (kDebugMode)
