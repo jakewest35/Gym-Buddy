@@ -14,7 +14,7 @@
     - [x] Create consistent data entry formats
     - [ ] Give the user the option to append to a data entry if it has already been posted to the database
   - **Dashboard Page**
-    - [ ] Change date picker from wheel to calendar format
+    - [x] Change date picker from wheel to calendar format
   - **Workout Log**:
     - [x] Remove "View previous workouts" button in workout log (this data will be made available in the overall data retrieval feature)
     - [x] Only have 1 screen: workout data entry

@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/screens/previous_data_screen.dart';
 import 'package:gym_buddy_app/utilities/firebase_init.dart';
@@ -13,7 +12,14 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  DateTime _dateTime = DateTime.now();
+  TextEditingController _dateController = new TextEditingController();
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     bool _loggedIn = Provider.of<UserAuthenticationState>(context).loggedIn;
@@ -36,25 +42,31 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ],
             ),
-            Padding(
-              padding: EdgeInsets.only(top: 120.0),
-              child: Text(
-                "Get data from previous days",
-                style: TextStyle(fontSize: 20.0),
+            SizedBox(
+              height: 12.0,
+            ),
+            TextField(
+              controller: _dateController,
+              decoration: const InputDecoration(
+                icon: Icon(Icons.calendar_today),
               ),
+              readOnly: true,
+              onTap: () async {
+                DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now());
+                if (pickedDate != null) {
+                  print("${pickedDate}");
+                  setState(() {
+                    _dateController.text =
+                        "${pickedDate.month}-${pickedDate.day}-${pickedDate.year}";
+                  });
+                }
+              },
             ),
             SizedBox(
-              height: 200,
-              child: CupertinoDatePicker(
-                initialDateTime: _dateTime,
-                maximumDate: DateTime.now(),
-                mode: CupertinoDatePickerMode.date,
-                onDateTimeChanged: (date) {
-                  setState(() {
-                    _dateTime = date;
-                  });
-                },
-              ),
+              height: 12.0,
             ),
             SizedBox(
               width: 225.0,
@@ -63,12 +75,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PreviousDataPage(
-                            date:
-                                "${_dateTime.month}-${_dateTime.day}-${_dateTime.year}"),
+                        builder: (context) =>
+                            PreviousDataPage(date: "${_dateController.text}"),
                       ));
                 },
-                child: Text("Get data"),
+                child: Text("Get previous data"),
                 style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.zero)),
