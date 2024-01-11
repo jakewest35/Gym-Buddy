@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gym_buddy_app/screens/new_workout_screen.dart';
+import 'package:gym_buddy_app/screens/workout_screen.dart';
 import 'package:gym_buddy_app/utilities/firebase_init.dart';
 import 'package:gym_buddy_app/utilities/workout_utility.dart';
 import 'package:provider/provider.dart';
