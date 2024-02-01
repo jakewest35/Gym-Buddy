@@ -96,14 +96,9 @@ class DietUtility extends ChangeNotifier {
     try {
       DietModel tmp =
           dietEntries.firstWhere((element) => element.mealName == mealName);
-
-      // update the macro count before removing the entry
-      totalMacros["Fat"] = totalMacros["Fat"]! - int.parse(tmp.fats);
-      totalMacros["Carbs"] = totalMacros["Carbs"]! - int.parse(tmp.carbs);
-      totalMacros["Protein"] = totalMacros["Protein"]! - int.parse(tmp.protein);
-      totalMacros["TotalCalories"] =
-          totalMacros["TotalCalories"]! - int.parse(tmp.calories);
-
+      print("Found ${tmp.mealName}");
+      updateMacros("subtract", int.parse(tmp.fats), int.parse(tmp.carbs),
+          int.parse(tmp.protein), int.parse(tmp.calories));
       dietEntries.remove(tmp);
     } catch (e) {
       if (kDebugMode) print("Couldn't find $mealName in the dietEntries list");
@@ -127,7 +122,6 @@ class DietUtility extends ChangeNotifier {
     }
     // only access else-block if user updated a meal
     else {
-      print("In updateMacros() else block");
       // reset the macros list so it can be re-calculated
       totalMacros = {
         "Fat": 0,
@@ -147,7 +141,6 @@ class DietUtility extends ChangeNotifier {
     if (kDebugMode)
       print(
           "TOTAL MACROS: Fat: ${totalMacros["Fat"]}, carbs: ${totalMacros["Carbs"]}, protein: ${totalMacros["Protein"]}, calories: ${totalMacros["TotalCalories"]}");
-    _updateState();
   }
 
   void _updateState() async {

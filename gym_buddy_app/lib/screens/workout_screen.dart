@@ -156,7 +156,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   ///Alert dialog to display the UI to edit an existing exercise
-  void showEditExerciseDialog(BuildContext context, int index) {
+  void editExerciseDialog(BuildContext context, int index) {
     ExerciseModel exercise = Provider.of<WorkoutUtility>(context, listen: false)
         .getCurrentWorkout[index];
     TextEditingController nameController =
@@ -330,7 +330,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                             // edit option
                             SlidableAction(
                               onPressed: (context) =>
-                                  showEditExerciseDialog(context, index),
+                                  editExerciseDialog(context, index),
                               backgroundColor: Colors.grey,
                               foregroundColor: Colors.white,
                               icon: Icons.edit,
