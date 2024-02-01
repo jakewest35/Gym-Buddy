@@ -1,9 +1,9 @@
 class DietModel {
-  final String mealName;
-  final String calories;
-  final String fats;
-  final String carbs;
-  final String protein;
+  String mealName;
+  String calories;
+  String fats;
+  String carbs;
+  String protein;
 
   DietModel({
     required this.mealName,

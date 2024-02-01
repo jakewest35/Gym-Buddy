@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +77,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     TextEditingController repsController = TextEditingController();
     showDialog(
         context: context,
-        builder: ((context) => AlertDialog(
+        builder: (context) => AlertDialog(
               titleTextStyle: Theme.of(context).textTheme.displayMedium,
               title: Text("Add an exercise"),
               content: Column(
@@ -111,7 +112,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               actions: [
                 MaterialButton(
                   onPressed: () {
-                    save(nameController.text, weightController.text,
+                    saveExercise(nameController.text, weightController.text,
                         setsController.text, repsController.text);
                     Navigator.pop(context);
                   },
@@ -124,11 +125,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   child: Text("Cancel"),
                 ),
               ],
-            )));
+            ));
   }
 
   ///Add the exercise to the current local workout and save the state
-  void save(String name, String weight, String sets, String reps) {
+  void saveExercise(String name, String weight, String sets, String reps) {
     Provider.of<WorkoutUtility>(context, listen: false)
         .addExercise(name, weight, reps, sets);
 
@@ -141,10 +142,87 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     });
   }
 
+  ///Update an existing exercise. This will overwrite the previous values in the exercise
+  void updateExercise(
+      int index, String name, String weight, String sets, String reps) {
+    Provider.of<WorkoutUtility>(context, listen: false)
+        .updateExercise(index, name, weight, sets, reps);
+  }
+
   ///checkbox was tapped, toggle exercise completed status
   void onCheckboxChanged(String exerciseName) {
     Provider.of<WorkoutUtility>(context, listen: false)
         .checkOffExercise(exerciseName);
+  }
+
+  ///Alert dialog to display the UI to edit an existing exercise
+  void showEditExerciseDialog(BuildContext context, int index) {
+    ExerciseModel exercise = Provider.of<WorkoutUtility>(context, listen: false)
+        .getCurrentWorkout[index];
+    TextEditingController nameController =
+        TextEditingController(text: exercise.name);
+    TextEditingController weightController =
+        TextEditingController(text: exercise.weight);
+    TextEditingController setsController =
+        TextEditingController(text: exercise.sets);
+    TextEditingController repsController =
+        TextEditingController(text: exercise.reps);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        titleTextStyle: Theme.of(context).textTheme.displaySmall,
+        title: Text("Edit Exercise"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              onChanged: (value) {
+                nameController.text = value;
+              },
+              controller: nameController,
+              decoration: InputDecoration(hintText: "Exercise Name"),
+            ),
+            TextFormField(
+              onChanged: ((value) {
+                weightController.text = value;
+              }),
+              controller: weightController,
+              decoration: InputDecoration(hintText: "Weight"),
+            ),
+            TextFormField(
+              onChanged: (value) {
+                setsController.text = value;
+              },
+              controller: setsController,
+              decoration: InputDecoration(hintText: "Sets"),
+            ),
+            TextFormField(
+              onChanged: (value) {
+                repsController.text = value;
+              },
+              controller: repsController,
+              decoration: InputDecoration(hintText: "Reps"),
+            ),
+          ],
+        ),
+        actions: [
+          MaterialButton(
+            onPressed: () {
+              updateExercise(index, nameController.text, weightController.text,
+                  setsController.text, repsController.text);
+              Navigator.pop(context);
+            },
+            child: Text("Save"),
+          ),
+          MaterialButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text("Cancel"),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -245,28 +323,40 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 itemBuilder: (context, index) {
                   return Column(
                     children: [
-                      Dismissible(
-                        background: Container(
-                          color: Colors.red,
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 20.0),
-                            child: Icon(Icons.delete),
-                          ),
+                      Slidable(
+                        endActionPane: ActionPane(
+                          motion: ScrollMotion(),
+                          children: [
+                            // edit option
+                            SlidableAction(
+                              onPressed: (context) =>
+                                  showEditExerciseDialog(context, index),
+                              backgroundColor: Colors.grey,
+                              foregroundColor: Colors.white,
+                              icon: Icons.edit,
+                              label: 'Edit',
+                            ),
+                            // delete option
+                            SlidableAction(
+                              onPressed: (context) {
+                                Provider.of<WorkoutUtility>(context,
+                                        listen: false)
+                                    .removeExercise(exercises[index].name);
+                                if (Provider.of<WorkoutUtility>(context,
+                                            listen: false)
+                                        .getCurrentWorkout
+                                        .length ==
+                                    0) {
+                                  prefs.remove("state");
+                                }
+                              },
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              icon: Icons.save,
+                              label: 'Delete',
+                            ),
+                          ],
                         ),
-                        direction: DismissDirection.endToStart,
-                        key: Key(exercises[index].name),
-                        onDismissed: (direction) {
-                          Provider.of<WorkoutUtility>(context, listen: false)
-                              .removeExercise(exercises[index].name);
-                          if (Provider.of<WorkoutUtility>(context,
-                                      listen: false)
-                                  .getCurrentWorkout
-                                  .length ==
-                              0) {
-                            prefs.remove("state");
-                          }
-                        },
                         child: ExerciseTile(
                             exerciseName: exercises[index].name,
                             weight: exercises[index].weight,

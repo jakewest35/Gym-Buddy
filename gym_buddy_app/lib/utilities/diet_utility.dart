@@ -23,14 +23,12 @@ class DietUtility extends ChangeNotifier {
   void setDietEntriesList(List<DietModel> list) {
     dietEntries = list;
     _updateState();
-    notifyListeners();
   }
 
   // set the macro total if they exist from the previous state
   void setMacroTotals(Map<String, int> totals) {
     totalMacros = totals;
     _updateState();
-    notifyListeners();
   }
 
   // clear the diet list
@@ -45,7 +43,6 @@ class DietUtility extends ChangeNotifier {
     printDietList();
     print("Total macros reset to:${totalMacros}");
     _updateState();
-    notifyListeners();
   }
 
   // print the diet list
@@ -74,10 +71,24 @@ class DietUtility extends ChangeNotifier {
       if (kDebugMode)
         print("dietUtility::addDietEntry: added $mealName to the list.");
       _updateState();
-      notifyListeners();
     } catch (e) {
       if (kDebugMode) print("Unable to add diet entry. Error: $e");
     }
+  }
+
+  /// update an existing meal entry. No need to check if entry exists because this
+  /// function can only be called if the entry exists in the first place.
+  void updateDietEntry(int index, String mealName, String calories, String fats,
+      String carbs, String protein) {
+    DietModel entry = dietEntries[index];
+    entry.mealName = mealName;
+    entry.calories = calories;
+    entry.fats = fats;
+    entry.carbs = carbs;
+    entry.protein = protein;
+    updateMacros(null, int.parse(fats), int.parse(carbs), int.parse(protein),
+        int.parse(calories));
+    _updateState();
   }
 
   // remove an entry from the diet list
@@ -98,12 +109,11 @@ class DietUtility extends ChangeNotifier {
       if (kDebugMode) print("Couldn't find $mealName in the dietEntries list");
     }
     _updateState();
-    notifyListeners();
   }
 
   // updates total macros for the page
   void updateMacros(
-      String operation, int fat, int carbs, int protein, int calories) {
+      String? operation, int fat, int carbs, int protein, int calories) {
     if (operation == "add") {
       totalMacros["Fat"] = totalMacros["Fat"]! + fat;
       totalMacros["Carbs"] = totalMacros["Carbs"]! + carbs;
@@ -114,6 +124,25 @@ class DietUtility extends ChangeNotifier {
       totalMacros["Carbs"] = totalMacros["Carbs"]! - carbs;
       totalMacros["Protein"] = totalMacros["Protein"]! - protein;
       totalMacros["TotalCalories"] = totalMacros["TotalCalories"]! - calories;
+    }
+    // only access else-block if user updated a meal
+    else {
+      print("In updateMacros() else block");
+      // reset the macros list so it can be re-calculated
+      totalMacros = {
+        "Fat": 0,
+        "Carbs": 0,
+        "Protein": 0,
+        "TotalCalories": 0,
+      };
+      for (var meal in dietEntries) {
+        totalMacros["Fat"] = totalMacros["Fat"]! + int.parse(meal.fats);
+        totalMacros["Carbs"] = totalMacros["Carbs"]! + int.parse(meal.carbs);
+        totalMacros["Protein"] =
+            totalMacros["Protein"]! + int.parse(meal.protein);
+        totalMacros["TotalCalories"] =
+            totalMacros["TotalCalories"]! + int.parse(meal.calories);
+      }
     }
     if (kDebugMode)
       print(
@@ -148,5 +177,6 @@ class DietUtility extends ChangeNotifier {
       if (kDebugMode)
         print("DietUtility::_updateState(): macro state is already empty.");
     }
+    notifyListeners();
   }
 }

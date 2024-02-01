@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:gym_buddy_app/models/diet_model.dart';
 import 'package:gym_buddy_app/utilities/database_utility.dart';
 import 'package:gym_buddy_app/utilities/diet_utility.dart';
@@ -59,7 +60,6 @@ class _DietScreenState extends State<DietScreen> {
       Provider.of<DietUtility>(context, listen: false)
           .setDietEntriesList(dietEntries);
     }
-
     // decode macros if they exist
     final jsonMacroMap = prefs.getString("macroState");
     if (jsonMacroMap != null) {
@@ -116,6 +116,15 @@ class _DietScreenState extends State<DietScreen> {
         Provider.of<DietUtility>(context, listen: false).getMacroTotals;
   }
 
+  ///Update an existing meal entry
+  void updateMeal(int index, String mealName, String calories, String fats,
+      String carbs, String protein) {
+    Provider.of<DietUtility>(context, listen: false)
+        .updateDietEntry(index, mealName, calories, fats, carbs, protein);
+    macroTotals =
+        Provider.of<DietUtility>(context, listen: false).getMacroTotals;
+  }
+
   ///Alert dialog to display the UI to add an exercise to the current workout
   void addMealAlertDialog(BuildContext context) {
     TextEditingController mealNameController = TextEditingController();
@@ -125,7 +134,7 @@ class _DietScreenState extends State<DietScreen> {
     TextEditingController proteinController = TextEditingController();
     showDialog(
         context: context,
-        builder: ((context) => AlertDialog(
+        builder: (context) => AlertDialog(
               titleTextStyle: Theme.of(context).textTheme.displayMedium,
               title: Text("Add a meal"),
               content: Column(
@@ -156,7 +165,7 @@ class _DietScreenState extends State<DietScreen> {
                   ),
                   TextFormField(
                     controller: proteinController,
-                    decoration: InputDecoration(hintText: "Grams of Protein"),
+                    decoration: InputDecoration(hintText: "Grams of protein"),
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: true),
                   ),
@@ -182,7 +191,87 @@ class _DietScreenState extends State<DietScreen> {
                   child: Text("Cancel"),
                 ),
               ],
-            )));
+            ));
+  }
+
+  void showEditMealDialog(BuildContext context, int index) {
+    DietModel meal = Provider.of<DietUtility>(context, listen: false)
+        .getDietEntriesList[index];
+    TextEditingController mealNameController =
+        TextEditingController(text: meal.mealName);
+    TextEditingController caloriesController =
+        TextEditingController(text: meal.calories);
+    TextEditingController fatsController =
+        TextEditingController(text: meal.fats);
+    TextEditingController carbsController =
+        TextEditingController(text: meal.carbs);
+    TextEditingController proteinController =
+        TextEditingController(text: meal.protein);
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              titleTextStyle: Theme.of(context).textTheme.displaySmall,
+              title: Text("Edit Meal"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    onChanged: (value) {
+                      mealNameController.text = value;
+                    },
+                    controller: mealNameController,
+                    decoration: InputDecoration(hintText: "Meal Name"),
+                  ),
+                  TextFormField(
+                    onChanged: (value) {
+                      caloriesController.text = value;
+                    },
+                    controller: caloriesController,
+                    decoration: InputDecoration(hintText: "Total calories"),
+                  ),
+                  TextFormField(
+                    onChanged: (value) {
+                      fatsController.text = value;
+                    },
+                    controller: fatsController,
+                    decoration: InputDecoration(hintText: "Grams of fat"),
+                  ),
+                  TextFormField(
+                    onChanged: (value) {
+                      carbsController.text = value;
+                    },
+                    controller: carbsController,
+                    decoration: InputDecoration(hintText: "Grams of carbs"),
+                  ),
+                  TextFormField(
+                    onChanged: (value) {
+                      proteinController.text = value;
+                    },
+                    controller: proteinController,
+                    decoration: InputDecoration(hintText: "Grams of protein"),
+                  ),
+                ],
+              ),
+              actions: [
+                MaterialButton(
+                    child: Text("Save"),
+                    onPressed: () {
+                      updateMeal(
+                          index,
+                          mealNameController.text,
+                          caloriesController.text,
+                          fatsController.text,
+                          carbsController.text,
+                          proteinController.text);
+                      Navigator.pop(context);
+                    }),
+                MaterialButton(
+                    child: Text("Cancel"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
   }
 
   @override
@@ -322,28 +411,41 @@ class _DietScreenState extends State<DietScreen> {
                 itemBuilder: (context, index) {
                   return Column(
                     children: [
-                      Dismissible(
-                        background: Container(
-                          color: Colors.red,
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 20.0),
-                            child: Icon(Icons.delete),
-                          ),
+                      Slidable(
+                        endActionPane: ActionPane(
+                          motion: ScrollMotion(),
+                          children: [
+                            // edit option
+                            SlidableAction(
+                              onPressed: (context) =>
+                                  showEditMealDialog(context, index),
+                              backgroundColor: Colors.grey,
+                              foregroundColor: Colors.white,
+                              icon: Icons.edit,
+                              label: 'Edit',
+                            ),
+                            // delete option
+                            SlidableAction(
+                              onPressed: (context) {
+                                Provider.of<DietUtility>(context, listen: false)
+                                    .removeDietEntry(
+                                        dietEntries[index].mealName);
+                                if (Provider.of<DietUtility>(context,
+                                            listen: false)
+                                        .getDietEntriesList
+                                        .length ==
+                                    0) {
+                                  prefs.remove("dietState");
+                                  prefs.remove("macrosState");
+                                }
+                              },
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              icon: Icons.save,
+                              label: 'Delete',
+                            ),
+                          ],
                         ),
-                        direction: DismissDirection.endToStart,
-                        key: Key(dietEntries[index].mealName),
-                        onDismissed: (direction) {
-                          Provider.of<DietUtility>(context, listen: false)
-                              .removeDietEntry(dietEntries[index].mealName);
-                          if (Provider.of<DietUtility>(context, listen: false)
-                                  .getDietEntriesList
-                                  .length ==
-                              0) {
-                            prefs.remove("dietState");
-                            prefs.remove("macrosState");
-                          }
-                        },
                         child: Container(
                           decoration: BoxDecoration(
                               color: Colors.grey,
@@ -396,6 +498,80 @@ class _DietScreenState extends State<DietScreen> {
                           ),
                         ),
                       ),
+                      // Dismissible(
+                      //   background: Container(
+                      //     color: Colors.red,
+                      //     alignment: Alignment.centerRight,
+                      //     child: Padding(
+                      //       padding: EdgeInsets.only(right: 20.0),
+                      //       child: Icon(Icons.delete),
+                      //     ),
+                      //   ),
+                      //   direction: DismissDirection.endToStart,
+                      //   key: Key(dietEntries[index].mealName),
+                      //   onDismissed: (direction) {
+                      //     Provider.of<DietUtility>(context, listen: false)
+                      //         .removeDietEntry(dietEntries[index].mealName);
+                      //     if (Provider.of<DietUtility>(context, listen: false)
+                      //             .getDietEntriesList
+                      //             .length ==
+                      //         0) {
+                      //       prefs.remove("dietState");
+                      //       prefs.remove("macrosState");
+                      //     }
+                      //   },
+                      //   child: Container(
+                      //     decoration: BoxDecoration(
+                      //         color: Colors.grey,
+                      //         borderRadius: BorderRadius.circular(12)),
+                      //     margin: EdgeInsets.only(bottom: 10.0),
+                      //     child: ListTile(
+                      //       title: Text(
+                      //         dietEntries[index].mealName,
+                      //         style: TextStyle(
+                      //           fontSize: 15.0,
+                      //           fontWeight: FontWeight.bold,
+                      //           overflow: TextOverflow.ellipsis,
+                      //         ),
+                      //       ),
+                      //       subtitle: SafeArea(
+                      //         child: SingleChildScrollView(
+                      //           scrollDirection: Axis.horizontal,
+                      //           child: Row(
+                      //             mainAxisAlignment: MainAxisAlignment.start,
+                      //             crossAxisAlignment: CrossAxisAlignment.start,
+                      //             children: [
+                      //               Chip(
+                      //                 label: Text(
+                      //                   "${dietEntries[index].calories} cal.",
+                      //                   style: TextStyle(fontSize: 10.0),
+                      //                 ),
+                      //               ),
+                      //               Chip(
+                      //                 label: Text(
+                      //                   "${dietEntries[index].fats} fat",
+                      //                   style: TextStyle(fontSize: 10.0),
+                      //                 ),
+                      //               ),
+                      //               Chip(
+                      //                 label: Text(
+                      //                   "${dietEntries[index].carbs} carb.",
+                      //                   style: TextStyle(fontSize: 10.0),
+                      //                 ),
+                      //               ),
+                      //               Chip(
+                      //                 label: Text(
+                      //                   "${dietEntries[index].protein} protein",
+                      //                   style: TextStyle(fontSize: 10.0),
+                      //                 ),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   );
                 },

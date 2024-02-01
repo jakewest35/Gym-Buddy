@@ -31,14 +31,12 @@ class WorkoutUtility extends ChangeNotifier {
   void setCurrentWorkout(List<ExerciseModel> workout) {
     _currentWorkout = workout;
     _updateState();
-    notifyListeners();
   }
 
   ///clear the current workout list
   void clearWorkout() {
     _currentWorkout.clear();
     _updateState();
-    notifyListeners();
   }
 
   void printCurrentWorkout() {
@@ -67,7 +65,6 @@ class WorkoutUtility extends ChangeNotifier {
         print(
             "WorkoutUtility::checkOffExercise: Toggled completed status of $exerciseName to ${tmp.isCompleted}");
       _updateState();
-      notifyListeners();
     } catch (e) {
       if (kDebugMode)
         print(
@@ -106,9 +103,24 @@ class WorkoutUtility extends ChangeNotifier {
       _currentWorkout.remove(tmp);
       if (kDebugMode) print("Deleted $exerciseName");
       _updateState();
-      notifyListeners();
     } catch (e) {
       if (kDebugMode) print("Error removing $exerciseName. $e");
+    }
+  }
+
+  /// update an exercise with new values. No need to check if entry exists because this
+  /// function can only be called if the entry exists in the first place.
+  void updateExercise(
+      int index, String exerciseName, String weight, String sets, String reps) {
+    try {
+      ExerciseModel exercise = _currentWorkout[index];
+      exercise.name = exerciseName;
+      exercise.weight = weight;
+      exercise.sets = sets;
+      exercise.reps = reps;
+      _updateState();
+    } catch (e) {
+      print("Didn't find ${exerciseName}");
     }
   }
 

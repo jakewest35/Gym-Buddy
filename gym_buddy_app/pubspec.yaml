@@ -28,6 +28,7 @@ dependencies:
   flutter_signin_button: ^2.0.0
   shared_preferences: ^2.1.0
   flutter_native_splash: ^2.2.19
+  flutter_slidable: ^3.0.1
 
 # set splash screen parameters
 flutter_native_splash:
