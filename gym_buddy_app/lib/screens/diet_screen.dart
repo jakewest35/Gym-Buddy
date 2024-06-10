@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -66,14 +67,14 @@ class _DietScreenState extends State<DietScreen> {
       Provider.of<DietUtility>(context, listen: false)
           .setMacroTotals(macroTotals);
     } else {
-      print("No diet or macro states exist");
+      log("No diet or macro states exist");
     }
     if (kDebugMode) {
       if (jsonMealList == null) {
-        print("_initPreferences: No previous meal state.");
+        log("_initPreferences: No previous meal state.");
       }
       if (jsonMacroMap == null) {
-        print("_initPreferences: No previous macro state.");
+        log("_initPreferences: No previous macro state.");
       }
     }
   }
@@ -86,7 +87,7 @@ class _DietScreenState extends State<DietScreen> {
       macroTotals =
           Provider.of<DietUtility>(context, listen: false).getMacroTotals;
     });
-    if (kDebugMode) print("set diet state = null");
+    if (kDebugMode) log("set diet state = null");
   }
 
   // update macros

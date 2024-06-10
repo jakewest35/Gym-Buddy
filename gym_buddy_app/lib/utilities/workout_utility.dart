@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:gym_buddy_app/models/exercise_model.dart';
@@ -41,19 +42,18 @@ class WorkoutUtility extends ChangeNotifier {
 
   void printCurrentWorkout() {
     if (_currentWorkout.isEmpty) {
-      print("WorkoutUtility::printCurrentWorkout: No exercises in list");
+      log("WorkoutUtility::printCurrentWorkout: No exercises in list");
       return;
     }
     for (var item in _currentWorkout) {
-      print(
-          "${item.name} at ${item.weight}lbs. for ${item.sets} sets of ${item.reps} reps, completed: ${item.isCompleted}");
+      log("${item.name} at ${item.weight}lbs. for ${item.sets} sets of ${item.reps} reps, completed: ${item.isCompleted}");
     }
   }
 
   ///mark the exercise as completed
   void checkOffExercise(String exerciseName) {
     if (kDebugMode)
-      print("WorkoutUtility::checkOffExercise: printing current workout list");
+      log("WorkoutUtility::checkOffExercise: printing current workout list");
     printCurrentWorkout();
 
     //find the exercise
@@ -62,13 +62,11 @@ class WorkoutUtility extends ChangeNotifier {
           .firstWhere((exercise) => exercise.name == exerciseName);
       tmp.isCompleted = !tmp.isCompleted;
       if (kDebugMode)
-        print(
-            "WorkoutUtility::checkOffExercise: Toggled completed status of $exerciseName to ${tmp.isCompleted}");
+        log("WorkoutUtility::checkOffExercise: Toggled completed status of $exerciseName to ${tmp.isCompleted}");
       _updateState();
     } catch (e) {
       if (kDebugMode)
-        print(
-            "WorkoutUtility::checkOffExercise: couldn't find exercise to mark as completed");
+        log("WorkoutUtility::checkOffExercise: couldn't find exercise to mark as completed");
     }
   }
 
@@ -87,11 +85,10 @@ class WorkoutUtility extends ChangeNotifier {
       // update the shared_preferences state
       _updateState();
       if (kDebugMode)
-        print(
-            "WorkoutUtility::addExercise: added exercise: $exerciseName at $weight lbs. for $sets sets of $reps reps.");
+        log("WorkoutUtility::addExercise: added exercise: $exerciseName at $weight lbs. for $sets sets of $reps reps.");
     } catch (e) {
       if (kDebugMode)
-        print("WorkoutUtility::addExercise, Couldn't add the exercise");
+        log("WorkoutUtility::addExercise, Couldn't add the exercise");
     }
   }
 
@@ -101,10 +98,10 @@ class WorkoutUtility extends ChangeNotifier {
       ExerciseModel tmp = _currentWorkout
           .firstWhere((exercise) => exercise.name == exerciseName);
       _currentWorkout.remove(tmp);
-      if (kDebugMode) print("Deleted $exerciseName");
+      if (kDebugMode) log("Deleted $exerciseName");
       _updateState();
     } catch (e) {
-      if (kDebugMode) print("Error removing $exerciseName. $e");
+      if (kDebugMode) log("Error removing $exerciseName. $e");
     }
   }
 
@@ -120,7 +117,7 @@ class WorkoutUtility extends ChangeNotifier {
       exercise.reps = reps;
       _updateState();
     } catch (e) {
-      print("Didn't find ${exerciseName}");
+      log("Didn't find ${exerciseName}");
     }
   }
 
@@ -132,19 +129,19 @@ class WorkoutUtility extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     // JsonEncode the current workout if it exists
     if (_currentWorkout.isNotEmpty) {
-      if (kDebugMode) print("In WorkoutUtility::_updateState:");
+      if (kDebugMode) log("In WorkoutUtility::_updateState:");
       printCurrentWorkout();
       final jsonList =
           jsonEncode(_currentWorkout.map((e) => e.toJson()).toList());
       if (kDebugMode)
-        print("WorkoutUtility::_updateState(): jsonList = $jsonList");
+        log("WorkoutUtility::_updateState(): jsonList = $jsonList");
       // update the state
       await prefs.setString("state", jsonList).then((value) {
-        if (kDebugMode) print("updated state.");
+        if (kDebugMode) log("updated state.");
       });
     } else {
       if (kDebugMode)
-        print("WorkoutUtility::_updateState(): state is already empty");
+        log("WorkoutUtility::_updateState(): state is already empty");
     }
     notifyListeners();
   }

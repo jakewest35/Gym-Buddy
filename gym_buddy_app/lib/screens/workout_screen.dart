@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'package:flutter/foundation.dart';
@@ -37,12 +38,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   void _initPreferences() async {
     prefs = await SharedPreferences.getInstance();
     final jsonList = prefs.getString("state");
-    if (kDebugMode) print("jsonList: $jsonList");
+    if (kDebugMode) log("jsonList: $jsonList");
 
     /// if a previous state exists, parse it and set
     /// it as the current exercise list
     if (jsonList != null) {
-      if (kDebugMode) print("$jsonList");
+      if (kDebugMode) log("$jsonList");
       List<dynamic> jsonParsed = jsonDecode(jsonList);
       setState(() {
         exercises = jsonParsed
@@ -53,7 +54,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             .setCurrentWorkout(exercises);
       });
     } else if (kDebugMode) {
-      print("_initPreferences: No previous state.");
+      log("_initPreferences: No previous state.");
     }
   }
 
@@ -64,7 +65,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       prefs.clear();
       exercises.clear();
     });
-    if (kDebugMode) print("set workout state = null");
+    if (kDebugMode) log("set workout state = null");
   }
 
   //! EXERCISE SPECIFIC FUNCTIONS

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/screens/previous_data_screen.dart';
@@ -57,7 +59,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     firstDate: DateTime(2000),
                     lastDate: DateTime.now());
                 if (pickedDate != null) {
-                  print("${pickedDate}");
+                  log("${pickedDate}");
                   setState(() {
                     _dateController.text =
                         "${pickedDate.month}-${pickedDate.day}-${pickedDate.year}";

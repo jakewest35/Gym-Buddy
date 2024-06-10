@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:gym_buddy_app/models/diet_model.dart';
@@ -41,19 +42,18 @@ class DietUtility extends ChangeNotifier {
       "TotalCalories": 0,
     };
     printDietList();
-    print("Total macros reset to:${totalMacros}");
+    log("Total macros reset to:${totalMacros}");
     _updateState();
   }
 
   // print the diet list
   void printDietList() {
     if (dietEntries.isEmpty) {
-      print("There are no entries in the diet list.");
+      log("There are no entries in the diet list.");
       return;
     }
     for (var entry in dietEntries) {
-      print(
-          "- ${entry.mealName}. It is ${entry.calories} total calories, containing ${entry.fats} g. fat, ${entry.carbs} g. carbs, and ${entry.protein} g. protein.");
+      log("- ${entry.mealName}. It is ${entry.calories} total calories, containing ${entry.fats} g. fat, ${entry.carbs} g. carbs, and ${entry.protein} g. protein.");
     }
   }
 
@@ -69,10 +69,10 @@ class DietUtility extends ChangeNotifier {
           protein: protein);
       dietEntries.add(newEntry);
       if (kDebugMode)
-        print("dietUtility::addDietEntry: added $mealName to the list.");
+        log("dietUtility::addDietEntry: added $mealName to the list.");
       _updateState();
     } catch (e) {
-      if (kDebugMode) print("Unable to add diet entry. Error: $e");
+      if (kDebugMode) log("Unable to add diet entry. Error: $e");
     }
   }
 
@@ -96,12 +96,12 @@ class DietUtility extends ChangeNotifier {
     try {
       DietModel tmp =
           dietEntries.firstWhere((element) => element.mealName == mealName);
-      print("Found ${tmp.mealName}");
+      log("Found ${tmp.mealName}");
       updateMacros("subtract", int.parse(tmp.fats), int.parse(tmp.carbs),
           int.parse(tmp.protein), int.parse(tmp.calories));
       dietEntries.remove(tmp);
     } catch (e) {
-      if (kDebugMode) print("Couldn't find $mealName in the dietEntries list");
+      if (kDebugMode) log("Couldn't find $mealName in the dietEntries list");
     }
     _updateState();
   }
@@ -139,8 +139,7 @@ class DietUtility extends ChangeNotifier {
       }
     }
     if (kDebugMode)
-      print(
-          "TOTAL MACROS: Fat: ${totalMacros["Fat"]}, carbs: ${totalMacros["Carbs"]}, protein: ${totalMacros["Protein"]}, calories: ${totalMacros["TotalCalories"]}");
+      log("TOTAL MACROS: Fat: ${totalMacros["Fat"]}, carbs: ${totalMacros["Carbs"]}, protein: ${totalMacros["Protein"]}, calories: ${totalMacros["TotalCalories"]}");
   }
 
   void _updateState() async {
@@ -151,24 +150,24 @@ class DietUtility extends ChangeNotifier {
       final jsonMealList =
           jsonEncode(dietEntries.map((e) => e.toJson()).toList());
       if (kDebugMode)
-        print("DietUtility::_updateState: jsonMealList = $jsonMealList");
+        log("DietUtility::_updateState: jsonMealList = $jsonMealList");
       await prefs.setString("dietState", jsonMealList).then((value) {
-        if (kDebugMode) print("Updated diet state");
+        if (kDebugMode) log("Updated diet state");
       });
     } else {
       if (kDebugMode)
-        print("DietUtility::_updateState(): meal state is already empty.");
+        log("DietUtility::_updateState(): meal state is already empty.");
     }
 
     // encode the current macro state
     if (totalMacros["TotalCalories"] != 0) {
       String jsonEncodedMacros = json.encode(totalMacros);
       await prefs.setString("macroState", jsonEncodedMacros).then((value) {
-        if (kDebugMode) print("Update macro state");
+        if (kDebugMode) log("Update macro state");
       });
     } else {
       if (kDebugMode)
-        print("DietUtility::_updateState(): macro state is already empty.");
+        log("DietUtility::_updateState(): macro state is already empty.");
     }
     notifyListeners();
   }

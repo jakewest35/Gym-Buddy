@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/button_list.dart';
@@ -33,7 +35,7 @@ class _GoogleAuthenticationPageState extends State<GoogleAuthenticationPage> {
       });
       if (_googleUser != null) {
         if (kDebugMode) {
-          print(_googleUser!.displayName);
+          log("${_googleUser!.displayName}");
         }
       }
     });
@@ -54,7 +56,7 @@ class _GoogleAuthenticationPageState extends State<GoogleAuthenticationPage> {
     try {
       await _googleSignIn.signIn();
     } catch (error) {
-      if (kDebugMode) print(error);
+      if (kDebugMode) log("${error}");
     }
   }
 
